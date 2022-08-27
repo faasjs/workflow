@@ -1,0 +1,31 @@
+{
+  "name": "@faasjs/workflow-types",
+  "version": "0.0.1",
+  "license": "MIT",
+  "types": "src/index.d.ts",
+  "homepage": "https://github.com/faasjs/workflow/blob/main/types",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/faasjs/workflow.git",
+    "directory": "packages/types"
+  },
+  "bugs": {
+    "url": "https://github.com/faasjs/workflow/issues"
+  },
+  "funding": "https://github.com/sponsors/faasjs",
+  "files": [
+    "src/index.ts"
+  ],
+  "engines": {
+    "npm": ">=8.0.0",
+    "node": ">=16.0.0"
+  },
+  "devDependencies": {
+    "@faasjs/eslint-config-recommended": "*"
+  },
+  "eslintConfig": {
+    "extends": [
+      "@faasjs/recommended"
+    ]
+  }
+}

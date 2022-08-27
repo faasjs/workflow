@@ -1,0 +1,42 @@
+name: Unit Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - packages/**
+      - .github/workflows/ci.yml
+      - package-lock.json
+  pull_request:
+    paths:
+      - packages/**
+      - package-lock.json
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:alpine
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3.4.1
+      - name: Install
+        run: |
+          npm install -g npm@latest
+          npm install
+      - name: Run Tests
+        run: npm run ci
+      - uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOVTOKEN }}
+      - uses: paambaati/codeclimate-action@v3.0.0
+        if: ${{ github.event_name == 'push'}}
+        env:
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}

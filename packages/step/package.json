@@ -1,0 +1,39 @@
+{
+  "name": "@faasjs/workflow-step",
+  "version": "0.0.1",
+  "license": "MIT",
+  "types": "src/index.d.ts",
+  "homepage": "https://github.com/faasjs/workflow/blob/main/step",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/faasjs/workflow.git",
+    "directory": "packages/step"
+  },
+  "bugs": {
+    "url": "https://github.com/faasjs/workflow/issues"
+  },
+  "funding": "https://github.com/sponsors/faasjs",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "npm": ">=8.0.0",
+    "node": ">=16.0.0"
+  },
+  "peerDependencies": {
+    "@faasjs/func": "*",
+    "@faasjs/http": "*",
+    "@faasjs/cloud_function": "*",
+    "@faasjs/knex": "*",
+    "pg": "*"
+  },
+  "devDependencies": {
+    "@faasjs/eslint-config-recommended": "*",
+    "@faasjs/test": "*"
+  },
+  "eslintConfig": {
+    "extends": [
+      "@faasjs/recommended"
+    ]
+  }
+}

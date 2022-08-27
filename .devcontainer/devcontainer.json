@@ -1,0 +1,18 @@
+{
+  "name": "FaasJS/Workflow",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/root/app",
+  "forwardPorts": [
+    12000
+  ],
+  "settings": {
+    "terminal.integrated.defaultProfile.linux": "zsh"
+  },
+  "extensions": [
+    "dbaeumer.vscode-eslint",
+    "eamodio.gitlens",
+    "streetsidesoftware.code-spell-checker",
+    "faasjs.faasjs-snippets"
+  ]
+}

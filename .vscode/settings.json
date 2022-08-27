@@ -1,0 +1,42 @@
+{
+	"editor.detectIndentation": true,
+  "editor.insertSpaces": true,
+  "editor.tabSize": 2,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  },
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "editor.wordWrap": "on",
+  "files.trimTrailingWhitespace": true,
+  "window.title": "${dirty} ${activeEditorMedium}${separator}${rootName}",
+  "editor.minimap.renderCharacters": false,
+  "editor.minimap.maxColumn": 200,
+  "editor.smoothScrolling": true,
+  "editor.cursorBlinking": "phase",
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/coverage": true,
+    "**/dist": true,
+    "**/tmp": true,
+    "**/.swc": true
+  },
+  "eslint.packageManager": "npm",
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "vue"
+  ],
+  "typescript.tsc.autoDetect": "off",
+  "npm.autoDetect": "off",
+  "gitlens.codeLens.enabled": false,
+  "cSpell.words": [
+    "antd",
+    "faasjs",
+  ],
+  "files.eol": "\n",
+  "terminal.integrated.scrollback": 100000,
+  "json.maxItemsComputed": 10000
+}
