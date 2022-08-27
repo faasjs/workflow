@@ -33,7 +33,7 @@ jobs:
           npm install
       - name: Run Tests
         run: npm run ci
-        with:
+        env:
           SECRET_KNEX_CONNECTION: postgresql://localhost/postgres
       - uses: codecov/codecov-action@v3
         with:
