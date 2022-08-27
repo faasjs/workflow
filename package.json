@@ -5,15 +5,22 @@
     "packages/*"
   ],
   "scripts": {
+    "lint": "eslint .",
     "test": "jest",
     "ci": "jest --silent --coverage --forceExit"
   },
   "devDependencies": {
-    "@faasjs/jest": "*"
+    "@faasjs/jest": "*",
+    "@faasjs/eslint-config-recommended": "*"
   },
   "engines": {
     "npm": ">=8.0.0",
     "node": ">=16.0.0"
+  },
+  "eslintConfig": {
+    "extends": [
+      "@faasjs/recommended"
+    ]
   },
   "jest": {
     "transform": {

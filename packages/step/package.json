@@ -28,12 +28,6 @@
     "pg": "*"
   },
   "devDependencies": {
-    "@faasjs/eslint-config-recommended": "*",
     "@faasjs/test": "*"
-  },
-  "eslintConfig": {
-    "extends": [
-      "@faasjs/recommended"
-    ]
   }
 }

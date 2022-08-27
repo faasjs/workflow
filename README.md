@@ -1,5 +1,9 @@
 # FaasJS/Workflow
 
+[![Last commit](https://img.shields.io/github/last-commit/faasjs/workflow)](https://github.com/faasjs/workflow)
+[![Unit Status](https://github.com/faasjs/workflow/actions/workflows/unit-test.yml/badge.svg)](https://github.com/faasjs/workflow/actions/workflows/unit-test.yml)
+[![Coverage Status](https://img.shields.io/codecov/c/github/faasjs/workflow.svg)](https://app.codecov.io/gh/faasjs/workflow)
+
 A Process Driven System base on FaasJS.
 
 ## Step examples
