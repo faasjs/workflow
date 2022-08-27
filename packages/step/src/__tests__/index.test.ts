@@ -4,11 +4,14 @@ import { useKnex } from '@faasjs/knex'
 
 describe('useSetStepRecord', () => {
   beforeAll(async () => {
-    process.env.SECRET_KNEX_CLIENT = 'pg'
     if (!process.env.SECRET_KNEX_CONNECTION)
       process.env.SECRET_KNEX_CONNECTION = `postgresql://testing@pg_testing${process.env.JEST_WORKER_ID}/testing`
 
-    await useKnex().mount({ config: { client: 'pg' } })
+    await useKnex({ config: { client: 'pg' } }).mount({ config: {} })
+  })
+
+  afterAll(async () => {
+    await useKnex().quit()
   })
 
   describe('should valid basic params', () => {
