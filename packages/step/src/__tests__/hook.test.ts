@@ -1,10 +1,10 @@
-import { useSetStepRecord } from '..'
+import { useStepRecordFunc } from '../hook'
 import { test } from '@faasjs/test'
 import { query } from '@faasjs/knex'
 
-describe('useSetStepRecord', () => {
+describe('hook', () => {
   describe('should valid basic params', () => {
-    const func = test(useSetStepRecord({
+    const func = test(useStepRecordFunc({
       stepId: 'stepId',
       summary: async () => 'summary'
     }))
@@ -40,7 +40,7 @@ describe('useSetStepRecord', () => {
 
   describe('draft', () => {
     it('should work', async () => {
-      const func = test(useSetStepRecord<{
+      const func = test(useStepRecordFunc<{
         productName: string
       }>({
         stepId: 'stepId',

@@ -6,8 +6,8 @@
   ],
   "scripts": {
     "lint": "eslint .",
-    "test": "jest",
-    "ci": "jest --silent --coverage --forceExit"
+    "test": "jest -w=1 --forceExit",
+    "ci": "jest --silent --coverage --forceExit -w=1"
   },
   "devDependencies": {
     "@faasjs/jest": "*",
