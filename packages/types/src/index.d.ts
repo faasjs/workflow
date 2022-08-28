@@ -1,10 +1,9 @@
 export type StepRecordAction = 'draft' | 'hang' | 'done' | 'cancel' | 'lock' | 'unlock'
 
-export type StepRecordStatus = 'pending' | 'hanging' | 'locked' | 'done' | 'canceled'
+export type StepRecordStatus = 'draft' | 'hanging' | 'locked' | 'done' | 'canceled'
 
 export type StepRecord<T = any> = {
   id: string
-
   stepId: string
 
   previousId: string
@@ -17,6 +16,8 @@ export type StepRecord<T = any> = {
   userId: string
 
   createdAt: Date
+  createdBy: string
+
   updatedAt: Date
   updatedBy: string
 

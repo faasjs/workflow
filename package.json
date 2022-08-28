@@ -29,7 +29,8 @@
     "testEnvironment": "node",
     "testRegex": "/*\\.test\\.ts$",
     "setupFilesAfterEnv": [
-      "@faasjs/test/dist/jest.setup.js"
+      "@faasjs/test/dist/jest.setup.js",
+      "./jest.setup.ts"
     ],
     "collectCoverageFrom": [
       "**/*.ts"

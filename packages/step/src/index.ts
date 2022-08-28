@@ -1,22 +1,19 @@
-import { StepRecordAction } from '@faasjs/workflow-types'
+import { StepRecord, StepRecordAction } from '@faasjs/workflow-types'
 import { Func, useFunc } from '@faasjs/func'
 import { useHttp } from '@faasjs/http'
-import { Knex, useKnex } from '@faasjs/knex'
+import { useKnex } from '@faasjs/knex'
+import { Knex } from 'knex'
 
 export type BaseOptions<TData> = {
-  id: string
-  stepId: string
+  record: Partial<StepRecord<TData>>
 
-  data: TData
-
-  summary: string
-  updatedBy: string
-  previousId?: string
-
-  knex: Knex
+  trx: Knex.Transaction
 }
 
-export function useSetStepRecord<TData> ({ stepId, }: {
+export function useSetStepRecord<TData> ({
+  stepId,
+  summary,
+}: {
   stepId: string
 
   summary?: (options: BaseOptions<TData>) => Promise<string>
@@ -48,7 +45,7 @@ export function useSetStepRecord<TData> ({ stepId, }: {
         }
       }
     })
-    useKnex()
+    const knex = useKnex()
 
     return async function () {
       if (!stepId) throw Error('stepId is required')
@@ -56,23 +53,40 @@ export function useSetStepRecord<TData> ({ stepId, }: {
       if (!http.params.id && !http.params.data)
         throw Error('[params] id or data is required.')
 
-      switch (http.params.action) {
-        case 'draft':
-        case 'done':
-        case 'lock':
-          if (!http.params.data) throw Error('[params] data is required.')
-          break
-        case 'hang':
-          if (!http.params.note) throw Error('[params] note is required.')
-          break
-        case 'unlock':
-        case 'cancel':
-          if (!http.params.id) throw Error('[params] id is required.')
-          if (!http.params.note) throw Error('[params] note is required.')
-          break
-        default:
-          throw Error(`[params] Unknown action: ${http.params.action}`)
-      }
+      await knex.transaction(async trx => {
+        let record: Partial<StepRecord>
+        let saved = false
+        if (http.params.id) {
+          record = await trx('step_records').where({ id: http.params.id }).first()
+          if (!record)
+            throw Error(`Record#${http.params.id} not found.`)
+        } else
+          record = {
+            stepId,
+            summary: null,
+            data: http.params.data
+          }
+
+        const save = async function () {
+          if (summary) record.summary = await summary({
+            record,
+            trx,
+          })
+          if (http.params.id)
+            await trx('step_records').where({ id: http.params.id }).update(record)
+          else
+            await trx('step_records').insert(record)
+          saved = true
+        }
+
+        switch (http.params.action) {
+          case 'draft':
+            record.status = 'draft'
+            if (!saved)
+              await save()
+            break
+        }
+      })
     }
   })
 }

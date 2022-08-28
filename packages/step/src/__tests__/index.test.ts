@@ -1,19 +1,8 @@
 import { useSetStepRecord } from '..'
 import { test } from '@faasjs/test'
-import { useKnex } from '@faasjs/knex'
+import { query } from '@faasjs/knex'
 
 describe('useSetStepRecord', () => {
-  beforeAll(async () => {
-    if (!process.env.SECRET_KNEX_CONNECTION)
-      process.env.SECRET_KNEX_CONNECTION = `postgresql://testing@pg_testing${process.env.JEST_WORKER_ID}/testing`
-
-    await useKnex({ config: { client: 'pg' } }).mount({ config: {} })
-  })
-
-  afterAll(async () => {
-    await useKnex().quit()
-  })
-
   describe('should valid basic params', () => {
     const func = test(useSetStepRecord({
       stepId: 'stepId',
@@ -45,6 +34,29 @@ describe('useSetStepRecord', () => {
       expect(await func.JSONhandler({ action: 'action' })).toMatchObject({
         statusCode: 500,
         error: { message: '[params] action must be in draft, hang, done, cancel, lock, unlock.' },
+      })
+    })
+  })
+
+  describe('draft', () => {
+    it('should work', async () => {
+      const func = test(useSetStepRecord<{
+        productName: string
+      }>({
+        stepId: 'stepId',
+        summary: async ({ record }) => `${record.data.productName}`
+      }))
+
+      expect(await func.JSONhandler({
+        action: 'draft',
+        data: { productName: 'name' },
+      })).toMatchObject({ statusCode: 201 })
+
+      const record = await query('step_records').first()
+
+      expect(record).toMatchObject({
+        status: 'draft',
+        summary: 'name',
       })
     })
   })
