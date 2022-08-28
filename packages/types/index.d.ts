@@ -4,6 +4,8 @@ export type StepRecordHandlerType = 'onDraft' | 'onHang' | 'onCancel' | 'onLock'
 
 export type StepRecordStatus = 'draft' | 'hanging' | 'locked' | 'done' | 'canceled'
 
+import type { Steps } from './steps'
+
 export type StepRecord<T = any> = {
   id: string
   stepId: keyof Steps
@@ -84,8 +86,4 @@ export type UnlockStepRecordParams<T = any> = BaseActionParams<T> & {
   action: 'unlock'
 }
 
-export interface Steps {
-  [key: string]: {
-    params: any
-  } & Record<StepRecordHandlerType, any>
-}
+export type { Steps }

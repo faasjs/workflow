@@ -2,7 +2,7 @@ import { useStepRecordFunc } from '../hook'
 import { test } from '@faasjs/test'
 import { query } from '@faasjs/knex'
 
-declare module '@faasjs/workflow-types' {
+declare module '@faasjs/workflow-types/steps' {
   interface Steps {
     basic: {
       params: {
