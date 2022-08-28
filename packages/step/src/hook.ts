@@ -1,20 +1,31 @@
-import { StepRecord, StepRecordAction } from '@faasjs/workflow-types'
+import {
+  BaseActionParams, StepRecord, Steps
+} from '@faasjs/workflow-types'
 import { Func, useFunc as originUseFunc } from '@faasjs/func'
 import { useHttp as originUseHttp, } from '@faasjs/http'
 import { useKnex as originUseKnex } from '@faasjs/knex'
 import { Knex as K } from 'knex'
 import { Lang, LangEn } from './lang'
 
-export type BaseOptions<TData> = {
-  record: Partial<StepRecord<TData>>
+type BaseOptions<TName extends keyof Steps> = {
+  record: Partial<StepRecord<Steps[TName]['params']>>
+
+  data: Steps[TName]['params']
 
   trx: K.Transaction
 }
 
-export type UseStepRecordFuncOptions<TData> = {
-  stepId: string
+type Save = () => Promise<StepRecord>
 
-  summary?: (options: BaseOptions<TData>) => Promise<string>
+type BaseActionOptions<TName extends keyof Steps> = BaseOptions<TName> & {
+  save: Save
+}
+
+export type UseStepRecordFuncOptions<TName extends keyof Steps> = {
+  stepId: TName
+
+  summary?: (options: BaseOptions<TName>) => Promise<string>
+  onDraft?: (options: BaseActionOptions<TName>) => Promise<Steps[TName]['onDraft']>
 
   lang?: Partial<Lang>
 
@@ -23,14 +34,16 @@ export type UseStepRecordFuncOptions<TData> = {
   useKnex?: typeof originUseKnex
 }
 
-export function useStepRecordFunc<TData> ({
+export function useStepRecordFunc<TName extends keyof Steps> ({
   stepId,
   summary,
   lang,
   useFunc,
   useHttp,
   useKnex,
-}: UseStepRecordFuncOptions<TData>) : Func {
+
+  onDraft,
+}: UseStepRecordFuncOptions<TName>) : Func {
   lang = !lang ? LangEn : {
     ...LangEn,
     ...lang,
@@ -43,14 +56,7 @@ export function useStepRecordFunc<TData> ({
   if (!stepId) throw Error(lang.stepIdRequired)
 
   return useFunc(function () {
-    const http = useHttp<{
-      action: StepRecordAction
-      id?: string
-      data?: TData
-      previousId?: string
-      note?: string
-      unlockAt?: number
-    }>({
+    const http = useHttp<BaseActionParams<Steps[TName]['params']>>({
       validator: {
         params: {
           rules: {
@@ -75,38 +81,59 @@ export function useStepRecordFunc<TData> ({
       if (!http.params.id && !http.params.data)
         throw Error(lang.idOrDataRequired)
 
-      await knex.transaction(async trx => {
+      return await knex.transaction(async trx => {
         let record: Partial<StepRecord>
         let saved = false
         if (http.params.id) {
           record = await trx('step_records').where({ id: http.params.id }).first()
+
           if (!record)
             throw Error(lang.recordNotFound(http.params.id))
         } else
           record = {
             stepId,
             summary: null,
-            data: http.params.data
           }
+
+        if (http.params.userId) record.userId = http.params.userId
+        if (http.params.data) record.data = http.params.data
+        if (http.params.note) record.note = http.params.note
+        if (http.params.previousId) record.previousId = http.params.previousId
+        if (http.params.unlockedAt) record.unlockAt = new Date(http.params.unlockedAt)
 
         const save = async function () {
           if (summary) record.summary = await summary({
             record,
+            data: record.data,
             trx,
           })
           if (http.params.id)
-            await trx('step_records').where({ id: http.params.id }).update(record)
+            record = await trx('step_records').where({ id: http.params.id }).update(record).returning('*').then(rows => rows[0])
           else
-            await trx('step_records').insert(record)
+            record = await trx('step_records').insert(record).returning('*').then(rows => rows[0])
           saved = true
+
+          return record as StepRecord
         }
 
         switch (http.params.action) {
-          case 'draft':
+          case 'draft': {
             record.status = 'draft'
-            if (!saved)
-              await save()
-            break
+
+            let result: Steps[TName]['onDraft']
+
+            if (onDraft)
+              result = await onDraft({
+                record,
+                data: record.data,
+                trx,
+                save,
+              })
+
+            if (!saved) await save()
+
+            return result
+          }
         }
       })
     }

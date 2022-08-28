@@ -1,10 +1,12 @@
 export type StepRecordAction = 'draft' | 'hang' | 'done' | 'cancel' | 'lock' | 'unlock'
 
+export type StepRecordHandlerType = 'onDraft' | 'onHang' | 'onCancel' | 'onLock' | 'onUnlock'
+
 export type StepRecordStatus = 'draft' | 'hanging' | 'locked' | 'done' | 'canceled'
 
 export type StepRecord<T = any> = {
   id: string
-  stepId: string
+  stepId: keyof Steps
 
   previousId: string
   ancestorIds: string[]
@@ -34,65 +36,56 @@ export type StepRecord<T = any> = {
   note: string
 }
 
-export type draftStepRecord<T = any> = {
-  action: 'draft'
+export type BaseActionParams<T> = {
+  action: StepRecordAction
 
   stepId: string
-  id?: string
+  previousId?: string
+  userId?: string
 
-  data: T
-}
+  note?: string
 
-export type hangStepRecord<T = any> = {
-  action: 'hang'
-
-  stepId: string
-  id?: string
-
-  data?: T
-
-  note: string
-}
-
-export type doneStepRecord<T = any> = {
-  action: 'done'
-
-  stepId: string
-  id?: string
-
-  data: T
-}
-
-export type cancelStepRecord<T = any> = {
-  action: 'cancel'
-
-  stepId: string
+  unlockedAt?: number
+} & ({
   id: string
 
   data?: T
+} | {
+  id?: string
+
+  data: T
+})
+
+export type DraftStepRecordParams<T> = BaseActionParams<T> & {
+  action: 'draft'
+}
+
+export type HangStepRecordParams<T> = BaseActionParams<T> & {
+  action: 'hang'
 
   note: string
 }
 
-export type lockStepRecord<T = any> = {
-  action: 'lock'
-
-  stepId: string
-  id?: string
-
-  data?: T
-
-  note?: string
+export type DoneStepRecordParams<T> = BaseActionParams<T> & {
+  action: 'done'
 }
 
+export type CancelStepRecordParams<T = any> = BaseActionParams<T> & {
+  action: 'cancel'
+
+  note: string
+}
+
+export type LockStepRecordParams<T = any> = BaseActionParams<T> & {
+  action: 'lock'
+}
+
+export type UnlockStepRecordParams<T = any> = BaseActionParams<T> & {
+  action: 'unlock'
+}
 
 export interface Steps {
   [key: string]: {
-    Input: {
-      [key: string]: any
-    }
-    Output: {
-      [key: string]: any
-    }
-  }
+    params: any
+  } & Record<StepRecordHandlerType, any>
 }

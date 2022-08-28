@@ -2,6 +2,19 @@ import { useStepRecordFunc } from '../hook'
 import { test } from '@faasjs/test'
 import { query } from '@faasjs/knex'
 
+declare module '@faasjs/workflow-types' {
+  interface Steps {
+    basic: {
+      params: {
+        productName: string
+      }
+      onDraft: {
+        productName: string
+      }
+    }
+  }
+}
+
 describe('hook', () => {
   describe('should valid basic params', () => {
     const func = test(useStepRecordFunc({
@@ -39,12 +52,10 @@ describe('hook', () => {
   })
 
   describe('draft', () => {
-    it('should work', async () => {
-      const func = test(useStepRecordFunc<{
-        productName: string
-      }>({
-        stepId: 'stepId',
-        summary: async ({ record }) => `${record.data.productName}`
+    it('should work without onDraft', async () => {
+      const func = test(useStepRecordFunc({
+        stepId: 'basic',
+        summary: async ({ data }) => `${data.productName}`
       }))
 
       expect(await func.JSONhandler({
@@ -57,6 +68,34 @@ describe('hook', () => {
       expect(record).toMatchObject({
         status: 'draft',
         summary: 'name',
+      })
+    })
+
+    it('should work with onDraft', async () => {
+      const func = test(useStepRecordFunc({
+        stepId: 'basic',
+        summary: async ({ data }) => `${data.productName}`,
+        async onDraft ({ data }) {
+          data.productName = 'test'
+
+          return { productName: data.productName }
+        }
+      }))
+
+      expect(await func.JSONhandler({
+        action: 'draft',
+        data: { productName: 'name' },
+      })).toMatchObject({
+        statusCode: 200,
+        data: { productName: 'test' },
+      })
+
+      const record = await query('step_records').first()
+
+      expect(record).toMatchObject({
+        status: 'draft',
+        summary: 'test',
+        data: { productName: 'test' }
       })
     })
   })
