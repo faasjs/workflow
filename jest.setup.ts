@@ -1,12 +1,18 @@
-import { useKnex, raw } from '@faasjs/knex'
+import { useKnex } from '@faasjs/knex'
+import Knex from 'knex'
+
+let knex: any
 
 global.beforeAll(async () => {
   if (!process.env.SECRET_KNEX_CONNECTION)
     process.env.SECRET_KNEX_CONNECTION = `postgresql://testing@pg_testing${process.env.JEST_WORKER_ID}/testing`
 
-  const knex = useKnex({ config: { client: 'pg' } })
-  await knex.mount({ config: {} })
+  await useKnex({ config: { client: 'pg' } }).mount({ config: {} })
 
+  knex = Knex({
+    client: 'pg',
+    connection: process.env.SECRET_KNEX_CONNECTION,
+  })
   await knex.raw('DROP SCHEMA IF EXISTS public CASCADE;CREATE SCHEMA public;')
   await knex.raw(`
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -37,6 +43,7 @@ CREATE TABLE step_records (
     "canceledAt"  timestamp with time zone,
     "lockedAt" timestamp with time zone,
     "unlockedAt" timestamp with time zone,
+    "undoAt" timestamp with time zone,
 
     duration numeric DEFAULT 0 not null,
 
@@ -46,9 +53,10 @@ CREATE TABLE step_records (
 })
 
 global.afterAll(async () => {
+  await knex.destroy()
   await useKnex().quit()
 })
 
 global.beforeEach(async () => {
-  await raw('TRUNCATE step_records RESTART IDENTITY;')
+  await knex.raw('TRUNCATE step_records RESTART IDENTITY;')
 })

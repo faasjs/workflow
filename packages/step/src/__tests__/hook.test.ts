@@ -1,6 +1,8 @@
 import { useStepRecordFunc } from '../hook'
 import { test } from '@faasjs/test'
 import { query } from '@faasjs/knex'
+import { Status, Times } from '../enum'
+import { StepRecordAction } from 'packages/types'
 
 declare module '@faasjs/workflow-types/steps' {
   interface Steps {
@@ -8,12 +10,19 @@ declare module '@faasjs/workflow-types/steps' {
       params: {
         productName: string
       }
-      onDraft: {
-        productName: string
-      }
     }
   }
 }
+
+const actions: StepRecordAction[] = [
+  'draft',
+  'hang',
+  'done',
+  'cancel',
+  'lock',
+  'unlock',
+  'undo',
+]
 
 describe('hook', () => {
   describe('should valid basic params', () => {
@@ -29,14 +38,7 @@ describe('hook', () => {
       })
     })
 
-    it.each([
-      'draft',
-      'hang',
-      'done',
-      'cancel',
-      'lock',
-      'unlock',
-    ])('with action %1', async (action) => {
+    it.each(actions)('with action %1', async (action) => {
       expect(await func.JSONhandler({ action })).toMatchObject({
         statusCode: 500,
         error: { message: '[params] id or data is required.' },
@@ -46,44 +48,48 @@ describe('hook', () => {
     it('with unknown action', async () => {
       expect(await func.JSONhandler({ action: 'action' })).toMatchObject({
         statusCode: 500,
-        error: { message: '[params] action must be in draft, hang, done, cancel, lock, unlock.' },
+        error: { message: '[params] action must be in draft, hang, done, cancel, lock, unlock, undo.' },
       })
     })
   })
 
-  describe('draft', () => {
-    it('should work without onDraft', async () => {
+  describe('actions', () => {
+    it.each(actions)('%s should work without handler', async (action) => {
       const func = test(useStepRecordFunc({
         stepId: 'basic',
         summary: async ({ data }) => `${data.productName}`
       }))
 
       expect(await func.JSONhandler({
-        action: 'draft',
+        action,
         data: { productName: 'name' },
       })).toMatchObject({ statusCode: 201 })
 
       const record = await query('step_records').first()
 
       expect(record).toMatchObject({
-        status: 'draft',
+        status: Status[action],
         summary: 'name',
       })
+
+      expect(record[Times[action]]).toBeDefined()
     })
 
-    it('should work with onDraft', async () => {
+    it.each(actions)('%s should work with handler', async (action) => {
       const func = test(useStepRecordFunc({
         stepId: 'basic',
         summary: async ({ data }) => `${data.productName}`,
-        async onDraft ({ data }) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        [`${action}`]: async ({ data }) => {
           data.productName = 'test'
 
-          return { productName: data.productName }
+          return { productName: data.productName, }
         }
       }))
 
       expect(await func.JSONhandler({
-        action: 'draft',
+        action,
         data: { productName: 'name' },
       })).toMatchObject({
         statusCode: 200,
@@ -93,10 +99,12 @@ describe('hook', () => {
       const record = await query('step_records').first()
 
       expect(record).toMatchObject({
-        status: 'draft',
+        status: Status[action],
         summary: 'test',
         data: { productName: 'test' }
       })
+
+      expect(record[Times[action]]).toBeDefined()
     })
   })
 })

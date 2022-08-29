@@ -1,11 +1,12 @@
 import {
-  BaseActionParams, StepRecord, Steps
+  StepRecord, StepRecordAction, Steps
 } from '@faasjs/workflow-types'
 import { Func, useFunc as originUseFunc } from '@faasjs/func'
 import { useHttp as originUseHttp, } from '@faasjs/http'
 import { useKnex as originUseKnex } from '@faasjs/knex'
 import { Knex as K } from 'knex'
 import { Lang, LangEn } from './lang'
+import { Status, Times } from './enum'
 
 type BaseOptions<TName extends keyof Steps> = {
   record: Partial<StepRecord<Steps[TName]['params']>>
@@ -14,6 +15,26 @@ type BaseOptions<TName extends keyof Steps> = {
 
   trx: K.Transaction
 }
+
+type BaseActionParams<T> = {
+  action: StepRecordAction
+
+  stepId: string
+  previousId?: string
+  userId?: string
+
+  note?: string
+
+  unlockedAt?: number
+} & ({
+  id: string
+
+  data?: T
+} | {
+  id?: string
+
+  data: T
+})
 
 type Save = () => Promise<StepRecord>
 
@@ -25,7 +46,14 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps> = {
   stepId: TName
 
   summary?: (options: BaseOptions<TName>) => Promise<string>
-  onDraft?: (options: BaseActionOptions<TName>) => Promise<Steps[TName]['onDraft']>
+
+  draft?: (options: BaseActionOptions<TName>) => Promise<Steps[TName]['draft']>
+  hang?: (options: BaseActionOptions<TName>) => Promise<Steps[TName]['hang']>
+  done?: (options: BaseActionOptions<TName>) => Promise<Steps[TName]['done']>
+  cancel?: (options: BaseActionOptions<TName>) => Promise<Steps[TName]['cancel']>
+  lock?: (options: BaseActionOptions<TName>) => Promise<Steps[TName]['lock']>
+  unlock?: (options: BaseActionOptions<TName>) => Promise<Steps[TName]['unlock']>
+  undo?: (options: BaseActionOptions<TName>) => Promise<Steps[TName]['undo']>
 
   lang?: Partial<Lang>
 
@@ -34,29 +62,20 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps> = {
   useKnex?: typeof originUseKnex
 }
 
-export function useStepRecordFunc<TName extends keyof Steps> ({
-  stepId,
-  summary,
-  lang,
-  useFunc,
-  useHttp,
-  useKnex,
-
-  onDraft,
-}: UseStepRecordFuncOptions<TName>) : Func {
-  lang = !lang ? LangEn : {
+export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRecordFuncOptions<TName>) : Func {
+  options.lang = !options.lang ? LangEn : {
     ...LangEn,
-    ...lang,
+    ...options.lang,
   }
 
-  if (!useFunc) useFunc = originUseFunc
-  if (!useHttp) useHttp = originUseHttp
-  if (!useKnex) useKnex = originUseKnex
+  if (!options.useFunc) options.useFunc = originUseFunc
+  if (!options.useHttp) options.useHttp = originUseHttp
+  if (!options.useKnex) options.useKnex = originUseKnex
 
-  if (!stepId) throw Error(lang.stepIdRequired)
+  if (!options.stepId) throw Error(options.lang.stepIdRequired)
 
-  return useFunc(function () {
-    const http = useHttp<BaseActionParams<Steps[TName]['params']>>({
+  return options.useFunc(function () {
+    const http = options.useHttp<BaseActionParams<Steps[TName]['params']>>({
       validator: {
         params: {
           rules: {
@@ -69,17 +88,18 @@ export function useStepRecordFunc<TName extends keyof Steps> ({
                 'cancel',
                 'lock',
                 'unlock',
+                'undo',
               ]
             }
           }
         }
       }
     })
-    const knex = useKnex()
+    const knex = options.useKnex()
 
     return async function () {
       if (!http.params.id && !http.params.data)
-        throw Error(lang.idOrDataRequired)
+        throw Error(options.lang.idOrDataRequired)
 
       return await knex.transaction(async trx => {
         let record: Partial<StepRecord>
@@ -88,21 +108,22 @@ export function useStepRecordFunc<TName extends keyof Steps> ({
           record = await trx('step_records').where({ id: http.params.id }).first()
 
           if (!record)
-            throw Error(lang.recordNotFound(http.params.id))
+            throw Error(options.lang.recordNotFound(http.params.id))
         } else
           record = {
-            stepId,
+            stepId: options.stepId,
             summary: null,
+            createdAt: new Date()
           }
 
         if (http.params.userId) record.userId = http.params.userId
         if (http.params.data) record.data = http.params.data
         if (http.params.note) record.note = http.params.note
         if (http.params.previousId) record.previousId = http.params.previousId
-        if (http.params.unlockedAt) record.unlockAt = new Date(http.params.unlockedAt)
+        if (http.params.unlockedAt) record.unlockedAt = new Date(http.params.unlockedAt)
 
         const save = async function () {
-          if (summary) record.summary = await summary({
+          if (options.summary) record.summary = await options.summary({
             record,
             data: record.data,
             trx,
@@ -116,25 +137,26 @@ export function useStepRecordFunc<TName extends keyof Steps> ({
           return record as StepRecord
         }
 
-        switch (http.params.action) {
-          case 'draft': {
-            record.status = 'draft'
+        record.status = Status[http.params.action]
 
-            let result: Steps[TName]['onDraft']
+        record[Times[http.params.action]] = new Date()
 
-            if (onDraft)
-              result = await onDraft({
-                record,
-                data: record.data,
-                trx,
-                save,
-              })
+        if (http.params.action === 'done' && record.createdAt)
+          record.duration = new Date().getTime() - record.createdAt.getTime()
 
-            if (!saved) await save()
+        let result
 
-            return result
-          }
-        }
+        if (options[http.params.action])
+          result = await options[http.params.action]({
+            record,
+            data: record.data,
+            trx,
+            save,
+          })
+
+        if (!saved) await save()
+
+        return result
       })
     }
   })
