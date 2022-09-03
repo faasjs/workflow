@@ -2,7 +2,7 @@ import {
   StepRecord, StepRecordAction, Steps
 } from '@faasjs/workflow-types'
 import { Func, useFunc as originUseFunc } from '@faasjs/func'
-import { useHttp as originUseHttp, } from '@faasjs/http'
+import { useHttp as originUseHttp, HttpError } from '@faasjs/http'
 import { useKnex as originUseKnex } from '@faasjs/knex'
 import { Knex as K } from 'knex'
 import { Lang, LangEn } from './lang'
@@ -91,7 +91,24 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
                 'undo',
               ]
             }
-          }
+          },
+          onError (type, key) {
+            switch (key) {
+              case 'action':
+                switch (type) {
+                  case 'params.rule.required':
+                    throw new HttpError({
+                      statusCode: 500,
+                      message: options.lang.actionRequired,
+                    })
+                  case 'params.rule.in':
+                    throw new HttpError({
+                      statusCode: 500,
+                      message: options.lang.actionMustBeIn,
+                    })
+                }
+            }
+          },
         }
       }
     })

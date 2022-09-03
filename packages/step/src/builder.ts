@@ -18,6 +18,12 @@ export type BuilderOptions = {
  */
 export function builder (builderOptions: BuilderOptions) {
   return <TName extends keyof Steps>(options: UseStepRecordFuncOptions<TName>) => {
+    if (options.lang && builderOptions.lang)
+      options.lang = {
+        ...builderOptions.lang,
+        ...options.lang
+      }
+
     return useStepRecordFunc({
       ...builderOptions,
       ...options,

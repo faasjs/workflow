@@ -2,7 +2,7 @@ import { useStepRecordFunc } from '../hook'
 import { test } from '@faasjs/test'
 import { query } from '@faasjs/knex'
 import { Status, Times } from '../enum'
-import { StepRecordAction } from 'packages/types'
+import { StepRecordAction } from '@faasjs/workflow-types'
 
 declare module '@faasjs/workflow-types/steps' {
   interface Steps {
@@ -49,6 +49,16 @@ describe('hook', () => {
       expect(await func.JSONhandler({ action: 'action' })).toMatchObject({
         statusCode: 500,
         error: { message: '[params] action must be in draft, hang, done, cancel, lock, unlock, undo.' },
+      })
+    })
+
+    it('with unknown record', async () => {
+      expect(await func.JSONhandler({
+        action: 'done',
+        id: 1,
+      })).toMatchObject({
+        statusCode: 500,
+        error: { message: 'Record#1 not found.' },
       })
     })
   })

@@ -6,33 +6,37 @@
 
 A Process Driven System base on FaasJS.
 
+## Features
+
+- [x] Process Driven.
+- [x] Each process is a function.
+- [x] Built with TypeScript and FaasJS.
+- [x] Easy to use and test.
+
 ## Step examples
 
 ```ts
 // newProduct.func.ts
 import { Step } from '@faasjs/workflow-step'
 
-export type StepParams = {
-  Input: {
-    productName: string
-    productPrice: number
-    productQuantity: number
-  }
-  Output: {
-    message: string
-  }
-}
-
-declare module '@faasjs/workflow-types' {
-  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+declare module '@faasjs/workflow-types/steps' {
   interface Steps {
-    newProduct: StepParams
+    newProduct: {
+      params: {
+        productName: string
+        productPrice: number
+        productQuantity: number
+      }
+      done: {
+        message: string
+      }
+    }
   }
 }
 
-export default useStep<StepParams>({
+export default useStep({
   stepId: 'newProduct',
-  async handler ({ createProduct, params }) {
+  async onDone ({ createProduct, params }) {
     if(!params.productName) throw new Error('productName is required')
     if(!params.productPrice) throw new Error('productPrice is required')
     if(!params.productQuantity) throw new Error('productQuantity is required')
@@ -45,3 +49,7 @@ export default useStep<StepParams>({
   }
 })
 ```
+
+## Contributing
+
+Guidelines for contributing to FaasJS workflow can be found in [CONTRIBUTING.md](CONTRIBUTING.md).
