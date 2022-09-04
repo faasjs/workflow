@@ -1,13 +1,13 @@
 {
-  "name": "@faasjs/workflow-step",
+  "name": "@faasjs/workflow-react",
   "version": "0.0.1",
   "license": "MIT",
   "types": "src/index.d.ts",
-  "homepage": "https://github.com/faasjs/workflow/blob/main/step",
+  "homepage": "https://github.com/faasjs/workflow/blob/main/react",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/faasjs/workflow.git",
-    "directory": "packages/step"
+    "directory": "packages/react"
   },
   "bugs": {
     "url": "https://github.com/faasjs/workflow/issues"
@@ -21,13 +21,11 @@
     "node": ">=16.0.0"
   },
   "dependencies": {
-    "@faasjs/func": "*",
-    "@faasjs/http": "*",
-    "@faasjs/cloud_function": "*",
-    "@faasjs/knex": "*",
-    "pg": "*"
+    "@faasjs/ant-design": "*"
   },
   "devDependencies": {
-    "@faasjs/test": "*"
+    "@testing-library/jest-dom": "*",
+    "@testing-library/react": "*",
+    "@testing-library/user-event": "*"
   }
 }
