@@ -7,7 +7,7 @@ import { StepRecordAction } from '../record'
 declare module '@faasjs/workflow-types/steps' {
   interface Steps {
     basic: {
-      params: {
+      data: {
         productName: string
       }
     }
@@ -64,6 +64,134 @@ describe('hook', () => {
   })
 
   describe('actions', () => {
+    describe('get', () => {
+      const func = test(useStepRecordFunc({ stepId: 'basic' }))
+
+      it('should work with record', async () => {
+        const record = await query('step_records').insert({
+          stepId: 'basic',
+          status: 'draft',
+        }).returning('*').then(r => r[0])
+
+        expect(await func.JSONhandler({
+          action: 'get',
+          id: record.id,
+        })).toMatchObject({
+          statusCode: 200,
+          data: {
+            id: record.id,
+            status: 'draft',
+            stepId: 'basic',
+            data: {},
+          }
+        })
+      })
+
+      it('should work with handler', async () => {
+        const func = test(useStepRecordFunc({
+          stepId: 'basic',
+          get: async () => ({
+            id: 'id',
+            status: 'draft',
+            data: {}
+          })
+        }))
+
+        expect(await func.JSONhandler({
+          action: 'get',
+          id: 'id',
+        })).toMatchObject({
+          statusCode: 200,
+          data: {
+            id: 'id',
+            status: 'draft',
+            data: {}
+          }
+        })
+      })
+
+      it('should fail without id', async () => {
+        expect(await func.JSONhandler({ action: 'get' })).toMatchObject({
+          statusCode: 500,
+          error: { message: '[params] id is required.' }
+        })
+      })
+    })
+
+    describe('list', () => {
+      const func = test(useStepRecordFunc({ stepId: 'basic' }))
+
+      it('should work with record', async () => {
+        const record = await query('step_records').insert({
+          stepId: 'basic',
+          status: 'draft',
+        }).returning('*').then(r => r[0])
+        1
+        expect(await func.JSONhandler({
+          action: 'list',
+          id: record.id,
+        })).toMatchObject({
+          statusCode: 200,
+          data: {
+            rows: [
+              {
+                id: record.id,
+                status: 'draft',
+                stepId: 'basic',
+                data: {},
+              }
+            ],
+            pagination: {
+              current: 1,
+              pageSize: 10,
+              total: 1,
+            }
+          }
+        })
+      })
+
+      it('should work with handler', async () => {
+        const func = test(useStepRecordFunc({
+          stepId: 'basic',
+          list: async () => ({
+            rows: [
+              {
+                id: 'id',
+                status: 'draft',
+                data: {}
+              }
+            ],
+            pagination: {
+              current: 1,
+              pageSize: 10,
+              total: 1,
+            }
+          })
+        }))
+
+        expect(await func.JSONhandler({
+          action: 'list',
+          id: 'id',
+        })).toMatchObject({
+          statusCode: 200,
+          data: {
+            rows: [
+              {
+                id: 'id',
+                status: 'draft',
+                data: {}
+              }
+            ],
+            pagination: {
+              current: 1,
+              pageSize: 10,
+              total: 1,
+            }
+          }
+        })
+      })
+    })
+
     it.each(actions)('%s should work without handler', async (action) => {
       const func = test(useStepRecordFunc({
         stepId: 'basic',

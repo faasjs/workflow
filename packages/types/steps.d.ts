@@ -1,7 +1,7 @@
-import { StepRecordAction } from '.'
+import { StepRecordAction } from '@faasjs/workflow-step'
 
 export interface Steps {
   [key: string]: {
-    params: Record<string, any>
+    data: Record<string, any>
   } & Partial<Record<StepRecordAction, any>>
 }

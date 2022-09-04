@@ -1,5 +1,6 @@
 export const LangEn = {
   stepIdRequired: 'stepId is required.',
+  idRequired: '[params] id is required.',
   idOrDataRequired: '[params] id or data is required.',
   recordNotFound: (id: string) => `Record#${id} not found.`,
   actionRequired: '[params] action is required.',
@@ -8,6 +9,7 @@ export const LangEn = {
 
 export const LangZh = {
   stepIdRequired: '缺少 stepId',
+  idRequired: '[params] 缺少 id',
   idOrDataRequired: '[params] 缺少 id 或 data',
   recordNotFound: (id: string) => `找不到记录#${id}`,
   actionRequired: '[params] 缺少 action',

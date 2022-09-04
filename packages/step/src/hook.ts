@@ -3,16 +3,16 @@ import { Func, useFunc as originUseFunc } from '@faasjs/func'
 import {
   useHttp as originUseHttp, HttpError, Http
 } from '@faasjs/http'
-import { useKnex as originUseKnex } from '@faasjs/knex'
+import { Knex, useKnex as originUseKnex } from '@faasjs/knex'
 import { Knex as K } from 'knex'
 import { Lang, LangEn } from './lang'
 import { Status, Times } from './enum'
 import { StepRecord, StepRecordAction } from './record'
 
 type BaseContext<TName extends keyof Steps> = {
-  record: Partial<StepRecord<Steps[TName]['params']>>
+  record: Partial<StepRecord<Steps[TName]['data']>>
 
-  data: Steps[TName]['params']
+  data: Steps[TName]['data']
 
   trx: K.Transaction
 
@@ -20,7 +20,7 @@ type BaseContext<TName extends keyof Steps> = {
 }
 
 type BaseActionParams<T> = {
-  action: StepRecordAction
+  action: StepRecordAction | 'get' | 'list'
 
   stepId: string
   previousId?: string
@@ -51,10 +51,37 @@ export type User = {
   [key: string]: any
 }
 
+export type ListPagination = {
+  current: number
+  pageSize: number
+  total: number
+}
+
 export type UseStepRecordFuncOptions<TName extends keyof Steps> = {
   stepId: TName
 
-  summary?: (options: BaseContext<TName>) => Promise<string>
+  get?: (context: {
+    id: string
+    stepId: TName
+    knex: Knex
+    user?: User
+  }) => Promise<Partial<StepRecord>>
+  list?: (context: {
+    stepId: TName
+    knex: Knex
+    user?: User
+  }) => Promise<{
+    rows: Partial<StepRecord>[]
+    pagination: ListPagination
+  }>
+
+  /** only be used with list action */
+  pagination?: {
+    current?: number
+    pageSize?: number
+  }
+
+  summary?: (context: BaseContext<TName>) => Promise<string>
 
   draft?: (options: BaseActionOptions<TName>) => Promise<Steps[TName]['draft']>
   hang?: (options: BaseActionOptions<TName>) => Promise<Steps[TName]['hang']>
@@ -85,13 +112,15 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
   if (!options.stepId) throw Error(options.lang.stepIdRequired)
 
   return options.useFunc(function () {
-    const http = options.useHttp<BaseActionParams<Steps[TName]['params']>>({
+    const http = options.useHttp<BaseActionParams<Steps[TName]['data']>>({
       validator: {
         params: {
           rules: {
             action: {
               required: true,
               in: [
+                'get',
+                'list',
                 'draft',
                 'hang',
                 'done',
@@ -125,75 +154,120 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
     const knex = options.useKnex()
 
     return async function () {
-      if (!http.params.id && !http.params.data)
-        throw Error(options.lang.idOrDataRequired)
-
       const user = options.getUser ? await options.getUser(http) : null
 
-      return await knex.transaction(async trx => {
-        let record: Partial<StepRecord>
-        let saved = false
-        if (http.params.id) {
-          record = await trx('step_records').where({ id: http.params.id }).first()
+      switch (http.params.action) {
+        case 'get':
+          if (!http.params.id)
+            throw Error(options.lang.idRequired)
 
-          if (!record)
-            throw Error(options.lang.recordNotFound(http.params.id))
-        } else
-          record = {
-            stepId: options.stepId,
-            summary: null,
-            createdAt: new Date()
+          if (options.get)
+            return options.get({
+              id: http.params.id,
+              stepId: options.stepId,
+              knex,
+              user,
+            })
+
+          return await knex.query('step_records').where({ id: http.params.id }).first()
+        case 'list': {
+          options.pagination = Object.assign({
+            current: 1,
+            pageSize: 10,
+          }, options.pagination || {})
+
+          if (options.list)
+            return options.list({
+              stepId: options.stepId,
+              knex,
+              user,
+            })
+
+          const rows = await knex.query('step_records')
+            .where({ stepId: options.stepId })
+            .orderBy('createdAt', 'desc')
+            .limit(options.pagination.pageSize)
+            .offset((options.pagination.current - 1) * options.pagination.pageSize)
+
+          return {
+            rows,
+            pagination: {
+              current: options.pagination.current,
+              pageSize: options.pagination.pageSize,
+              total: await knex.query('step_records').where({ stepId: options.stepId }).count().then(row => row[0].count),
+            }
           }
-
-        if (http.params.userId) record.userId = http.params.userId
-        if (http.params.data) record.data = http.params.data
-        if (http.params.note) record.note = http.params.note
-        if (http.params.previousId) record.previousId = http.params.previousId
-        if (http.params.unlockedAt) record.unlockedAt = new Date(http.params.unlockedAt)
-
-        const save = async function () {
-          if (options.summary) record.summary = await options.summary({
-            user,
-            record,
-            data: record.data,
-            trx,
-          })
-
-          record.updatedBy = user?.id
-
-          if (http.params.id)
-            record = await trx('step_records').where({ id: http.params.id }).update(record).returning('*').then(rows => rows[0])
-          else {
-            record.createdBy = user?.id
-            record = await trx('step_records').insert(record).returning('*').then(rows => rows[0])
-          }
-          saved = true
-
-          return record as StepRecord
         }
+        default: {
+          if (!http.params.id && !http.params.data)
+            throw Error(options.lang.idOrDataRequired)
 
-        record.status = Status[http.params.action]
+          return await knex.transaction(async trx => {
+            let record: Partial<StepRecord>
+            let saved = false
+            if (http.params.id) {
+              record = await trx('step_records').where({ id: http.params.id }).first()
 
-        record[Times[http.params.action]] = new Date()
+              if (!record)
+                throw Error(options.lang.recordNotFound(http.params.id))
+            } else
+              record = {
+                stepId: options.stepId,
+                summary: null,
+                createdAt: new Date()
+              }
 
-        if (http.params.action === 'done' && record.createdAt)
-          record.duration = new Date().getTime() - record.createdAt.getTime()
+            if (http.params.userId) record.userId = http.params.userId
+            if (http.params.data) record.data = http.params.data
+            if (http.params.note) record.note = http.params.note
+            if (http.params.previousId) record.previousId = http.params.previousId
+            if (http.params.unlockedAt) record.unlockedAt = new Date(http.params.unlockedAt)
 
-        let result
+            const save = async function () {
+              if (options.summary) record.summary = await options.summary({
+                user,
+                record,
+                data: record.data,
+                trx,
+              })
 
-        if (options[http.params.action])
-          result = await options[http.params.action]({
-            user,
-            record,
-            data: record.data,
-            trx,
-            save,
+              record.updatedBy = user?.id
+
+              if (http.params.id)
+                record = await trx('step_records').where({ id: http.params.id }).update(record).returning('*').then(rows => rows[0])
+              else {
+                record.createdBy = user?.id
+                record = await trx('step_records').insert(record).returning('*').then(rows => rows[0])
+              }
+              saved = true
+
+              return record as StepRecord
+            }
+
+            record.status = Status[http.params.action as StepRecordAction]
+
+            record[Times[http.params.action as StepRecordAction]] = new Date()
+
+            if (http.params.action === 'done' && record.createdAt)
+              record.duration = new Date().getTime() - record.createdAt.getTime()
+
+            let result
+
+            if (options[http.params.action as StepRecordAction])
+              result = await options[http.params.action as StepRecordAction]({
+                user,
+                record,
+                data: record.data,
+                trx,
+                save,
+              })
+
+            if (!saved) await save()
+
+            return result
           })
-
-        if (!saved) await save()
-
-        return result
-      })
+        }
+      }
     }
   })
 }

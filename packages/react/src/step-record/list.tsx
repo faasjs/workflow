@@ -26,8 +26,8 @@ export function StepRecordList (props: {
         }
       ]}
       faasData={{
-        action: 'steps/records/list',
-        params: { stepId: props.stepId }
+        action: `steps/${props.stepId}`,
+        params: { action: 'list' }
       }}
     />
   </>
