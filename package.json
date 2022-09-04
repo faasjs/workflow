@@ -36,6 +36,12 @@
     "collectCoverageFrom": [
       "**/*.ts",
       "**/*.tsx"
-    ]
+    ],
+    "moduleNameMapper": {
+      "\\.(css|less|sass|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "@faasjs/jest",
+      "@faasjs/workflow-(.*)": "<rootDir>/packages/$1/src",
+      "^antd/es/(.*)$": "antd/lib/$1",
+      "^rc-picker/es/(.*)$": "rc-picker/lib/$1"
+    }
   }
 }

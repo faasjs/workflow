@@ -3,12 +3,46 @@
  */
 import { render, screen } from '@testing-library/react'
 import { StepRecordList } from '../list'
-import '@testing-library/jest-dom'
+import { FaasReactClient } from '@faasjs/react'
 
 describe('StepRecordList', () => {
-  it('should work', () => {
-    render(<StepRecordList />)
+  let originalFetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
 
-    expect(screen.getByText('StepRecordList')).toBeInTheDocument()
+  beforeEach(() => {
+    originalFetch = window.fetch
+    window.fetch = jest.fn(async () => {
+      return Promise.resolve({
+        status: 200,
+        headers: new Map([['Content-Type', 'application/json']]),
+        text: async () => JSON.stringify({
+          data: {
+            rows: [
+              {
+                id: 'id',
+                status: 'draft',
+                summary: 'summary',
+                createdAt: Date.now()
+              }
+            ],
+            pagination: {
+              current: 1,
+              pageSize: 10,
+              total: 20,
+            }
+          }
+        })
+      }) as unknown as Promise<Response>
+    })
+    FaasReactClient({ domain: 'test' })
+  })
+
+  afterEach(() => {
+    window.fetch = originalFetch
+  })
+
+  it('should work', async () => {
+    render(<StepRecordList stepId='stepId' />)
+
+    expect(await screen.findByText('summary')).toBeInTheDocument()
   })
 })

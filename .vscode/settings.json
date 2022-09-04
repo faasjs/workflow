@@ -34,7 +34,8 @@
   "gitlens.codeLens.enabled": false,
   "cSpell.words": [
     "antd",
-    "faasjs",
+    "faas",
+    "faasjs"
   ],
   "files.eol": "\n",
   "terminal.integrated.scrollback": 100000,
