@@ -1,4 +1,4 @@
-import type { StepRecordAction, StepRecordStatus } from '@faasjs/workflow-types'
+import type { StepRecordAction, StepRecordStatus } from './record'
 
 export const Status: Record<StepRecordAction, StepRecordStatus> = {
   draft: 'draft',

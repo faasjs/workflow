@@ -1,4 +1,4 @@
-import { StepRecordAction } from '@faasjs/workflow-types'
+import { StepRecordAction } from '../record'
 import { builder } from '../builder'
 import { LangZh } from '../lang'
 import { test } from '@faasjs/test'

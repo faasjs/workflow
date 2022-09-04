@@ -1,19 +1,22 @@
-import {
-  StepRecord, StepRecordAction, Steps
-} from '@faasjs/workflow-types'
+import { Steps } from '@faasjs/workflow-types'
 import { Func, useFunc as originUseFunc } from '@faasjs/func'
-import { useHttp as originUseHttp, HttpError } from '@faasjs/http'
+import {
+  useHttp as originUseHttp, HttpError, Http
+} from '@faasjs/http'
 import { useKnex as originUseKnex } from '@faasjs/knex'
 import { Knex as K } from 'knex'
 import { Lang, LangEn } from './lang'
 import { Status, Times } from './enum'
+import { StepRecord, StepRecordAction } from './record'
 
-type BaseOptions<TName extends keyof Steps> = {
+type BaseContext<TName extends keyof Steps> = {
   record: Partial<StepRecord<Steps[TName]['params']>>
 
   data: Steps[TName]['params']
 
   trx: K.Transaction
+
+  user?: User
 }
 
 type BaseActionParams<T> = {
@@ -38,14 +41,20 @@ type BaseActionParams<T> = {
 
 type Save = () => Promise<StepRecord>
 
-type BaseActionOptions<TName extends keyof Steps> = BaseOptions<TName> & {
+type BaseActionOptions<TName extends keyof Steps> = BaseContext<TName> & {
   save: Save
+}
+
+export type User = {
+  id: string
+} & {
+  [key: string]: any
 }
 
 export type UseStepRecordFuncOptions<TName extends keyof Steps> = {
   stepId: TName
 
-  summary?: (options: BaseOptions<TName>) => Promise<string>
+  summary?: (options: BaseContext<TName>) => Promise<string>
 
   draft?: (options: BaseActionOptions<TName>) => Promise<Steps[TName]['draft']>
   hang?: (options: BaseActionOptions<TName>) => Promise<Steps[TName]['hang']>
@@ -57,6 +66,7 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps> = {
 
   lang?: Partial<Lang>
 
+  getUser?: (http: Http) => Promise<User>
   useFunc?: typeof originUseFunc
   useHttp?: typeof originUseHttp
   useKnex?: typeof originUseKnex
@@ -118,6 +128,8 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
       if (!http.params.id && !http.params.data)
         throw Error(options.lang.idOrDataRequired)
 
+      const user = options.getUser ? await options.getUser(http) : null
+
       return await knex.transaction(async trx => {
         let record: Partial<StepRecord>
         let saved = false
@@ -141,14 +153,20 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
 
         const save = async function () {
           if (options.summary) record.summary = await options.summary({
+            user,
             record,
             data: record.data,
             trx,
           })
+
+          record.updatedBy = user?.id
+
           if (http.params.id)
             record = await trx('step_records').where({ id: http.params.id }).update(record).returning('*').then(rows => rows[0])
-          else
+          else {
+            record.createdBy = user?.id
             record = await trx('step_records').insert(record).returning('*').then(rows => rows[0])
+          }
           saved = true
 
           return record as StepRecord
@@ -165,6 +183,7 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
 
         if (options[http.params.action])
           result = await options[http.params.action]({
+            user,
             record,
             data: record.data,
             trx,
