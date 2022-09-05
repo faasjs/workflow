@@ -13,42 +13,11 @@ A Process Driven System base on FaasJS.
 - [x] Built with TypeScript and FaasJS.
 - [x] Easy to use and test.
 
-## Step examples
+## Documentation
 
-```ts
-// newProduct.func.ts
-import { Step } from '@faasjs/workflow-step'
-
-declare module '@faasjs/workflow-types/steps' {
-  interface Steps {
-    newProduct: {
-      params: {
-        productName: string
-        productPrice: number
-        productQuantity: number
-      }
-      done: {
-        message: string
-      }
-    }
-  }
-}
-
-export default useStep({
-  stepId: 'newProduct',
-  async onDone ({ createProduct, params }) {
-    if(!params.productName) throw new Error('productName is required')
-    if(!params.productPrice) throw new Error('productPrice is required')
-    if(!params.productQuantity) throw new Error('productQuantity is required')
-
-    await createProduct(params)
-
-    return {
-      message: 'Product created'
-    }
-  }
-})
-```
+- [@faasjs/workflow-react](packages/react/README.md)
+- [@faasjs/workflow-step](packages/step/README.md)
+- [@faasjs/workflow-types](packages/types/README.md)
 
 ## Contributing
 

@@ -2,6 +2,43 @@
 
 The step component in FaasJS/Workflow.
 
+## Examples
+
+```ts
+// newProduct.func.ts
+import { useStepRecordFunc } from '@faasjs/workflow-step'
+
+declare module '@faasjs/workflow-types/steps' {
+  interface Steps {
+    newProduct: {
+      data: {
+        productName: string
+        productPrice: number
+        productQuantity: number
+      }
+      done: {
+        message: string
+      }
+    }
+  }
+}
+
+export default useStepRecordFunc({
+  stepId: 'newProduct',
+  async done ({ createProduct, params }) {
+    if(!params.productName) throw new Error('productName is required')
+    if(!params.productPrice) throw new Error('productPrice is required')
+    if(!params.productQuantity) throw new Error('productQuantity is required')
+
+    await createProduct(params)
+
+    return {
+      message: 'Product created'
+    }
+  }
+})
+```
+
 ## Step's Status
 
 ### draft
