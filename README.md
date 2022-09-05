@@ -15,9 +15,20 @@ A Process Driven System base on FaasJS.
 
 ## Documentation
 
-- [@faasjs/workflow-react](packages/react/README.md)
-- [@faasjs/workflow-step](packages/step/README.md)
-- [@faasjs/workflow-types](packages/types/README.md)
+### [@faasjs/workflow-react](packages/react/README.md)
+
+[![License: MIT](https://img.shields.io/npm/l/@faasjs/workflow-react.svg)](https://github.com/faasjs/workflow/blob/main/packages/react/LICENSE)
+[![NPM Version](https://img.shields.io/npm/v/@faasjs/workflow-react/latest.svg)](https://www.npmjs.com/package/@faasjs/workflow-react)
+
+### [@faasjs/workflow-step](packages/step/README.md)
+
+[![License: MIT](https://img.shields.io/npm/l/@faasjs/workflow-step.svg)](https://github.com/faasjs/workflow/blob/main/packages/step/LICENSE)
+[![NPM Version](https://img.shields.io/npm/v/@faasjs/workflow-step/latest.svg)](https://www.npmjs.com/package/@faasjs/workflow-step)
+
+### [@faasjs/workflow-types](packages/types/README.md)
+
+[![License: MIT](https://img.shields.io/npm/l/@faasjs/workflow-types.svg)](https://github.com/faasjs/workflow/blob/main/packages/types/LICENSE)
+[![NPM Version](https://img.shields.io/npm/v/@faasjs/workflow-types/latest.svg)](https://www.npmjs.com/package/@faasjs/workflow-types)
 
 ## Contributing
 

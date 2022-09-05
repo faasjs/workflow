@@ -48,7 +48,7 @@ describe('hook', () => {
     it('with unknown action', async () => {
       expect(await func.JSONhandler({ action: 'action' })).toMatchObject({
         statusCode: 500,
-        error: { message: '[params] action must be in draft, hang, done, cancel, lock, unlock, undo.' },
+        error: { message: '[params] action must be in get, list, draft, hang, done, cancel, lock, unlock, undo.' },
       })
     })
 

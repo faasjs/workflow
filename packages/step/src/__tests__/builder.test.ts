@@ -46,7 +46,7 @@ describe('builder', () => {
     it('with unknown action', async () => {
       expect(await func.JSONhandler({ action: 'action' })).toMatchObject({
         statusCode: 500,
-        error: { message: '[params] action 必须是 draft, hang, done, cancel, lock, unlock, undo 中的一个' },
+        error: { message: '[params] action 必须是 get, list, draft, hang, done, cancel, lock, unlock, undo 中的一个' },
       })
     })
 
