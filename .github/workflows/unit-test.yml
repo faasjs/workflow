@@ -28,7 +28,7 @@ jobs:
           - 5432:5432
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3.4.1
+      - uses: actions/setup-node@v3
       - name: Install
         run: |
           npm install -g npm@latest

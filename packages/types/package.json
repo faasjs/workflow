@@ -1,6 +1,6 @@
 {
   "name": "@faasjs/workflow-types",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "license": "MIT",
   "types": "index.d.ts",
   "homepage": "https://github.com/faasjs/workflow/blob/main/types",

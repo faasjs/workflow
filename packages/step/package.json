@@ -1,6 +1,6 @@
 {
   "name": "@faasjs/workflow-step",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "license": "MIT",
   "types": "src/index.d.ts",
   "homepage": "https://github.com/faasjs/workflow/blob/main/step",
@@ -29,5 +29,9 @@
   },
   "devDependencies": {
     "@faasjs/test": "*"
+  },
+  "scripts": {
+    "build": "tsup-node src/index.ts --format esm,cjs",
+    "build:types": "tsup-node src/index.ts --dts-only"
   }
 }

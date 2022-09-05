@@ -1,6 +1,6 @@
 {
   "name": "@faasjs/workflow-react",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "license": "MIT",
   "types": "src/index.d.ts",
   "homepage": "https://github.com/faasjs/workflow/blob/main/react",
@@ -27,5 +27,9 @@
     "@testing-library/jest-dom": "*",
     "@testing-library/react": "*",
     "@testing-library/user-event": "*"
+  },
+  "scripts": {
+    "build": "tsup-node src/index.ts --format esm,cjs",
+    "build:types": "tsup-node src/index.ts --dts-only"
   }
 }

@@ -1,0 +1,48 @@
+name: Publish nightly version
+
+on:
+  workflow_run:
+    workflows:
+      - Unit Test
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  publish_npm:
+    if: github.ref == 'refs/heads/main' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - name: Install
+        run: |
+          npm install -g npm@latest
+          npm install
+      - name: Build
+        run: |
+          npm run build
+      - name: Publish
+        run: |
+          npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
+          npm run publish:devel
+        env:
+          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+      - name: Add tag
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const readFileSync = require('fs').readFileSync;
+            const join = require('path').join;
+
+            const packageJson = JSON.parse(readFileSync(join('packages', 'md', 'package.json'), 'utf8'));
+            const version = packageJson.version;
+
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/v' + version,
+              sha: context.sha
+            })
