@@ -1,9 +1,7 @@
-export type StepStatus = 'enabled' | 'disabled'
-
 export type Step = {
   id: string
   name: string
-  status: StepStatus
+  enabled: boolean
 
   createdAt: Date
   updatedAt: Date
