@@ -36,9 +36,3 @@ export type StepRecord<T = any> = {
   summary: string
   note: string
 }
-
-declare module 'knex/types/tables' {
-  interface Tables {
-    step_records: StepRecord
-  }
-}

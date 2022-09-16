@@ -8,9 +8,3 @@ export type Step = {
   createdAt: Date
   updatedAt: Date
 }
-
-declare module 'knex/types/tables' {
-  interface Tables {
-    steps: Step
-  }
-}
