@@ -1,9 +1,9 @@
 import { Steps } from '@faasjs/workflow-types'
-import { Func, useFunc as originUseFunc } from '@faasjs/func'
+import { Func, useFunc } from '@faasjs/func'
 import {
-  useHttp as originUseHttp, HttpError, Http
+  useHttp, HttpError, Http
 } from '@faasjs/http'
-import { Knex, useKnex as originUseKnex } from '@faasjs/knex'
+import { Knex, useKnex } from '@faasjs/knex'
 import { Knex as K } from 'knex'
 import { Lang, LangEn } from './lang'
 import { Status, Times } from './enum'
@@ -93,10 +93,12 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps> = {
 
   lang?: Partial<Lang>
 
-  getUser?: (http: Http) => Promise<User>
-  useFunc?: typeof originUseFunc
-  useHttp?: typeof originUseHttp
-  useKnex?: typeof originUseKnex
+  getUser?: (props: {
+    http: Http
+    knex: Knex
+  }) => Promise<User>
+
+  before?: (context: BaseContext<TName>) => Promise<void>
 }
 
 export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRecordFuncOptions<TName>) : Func {
@@ -105,14 +107,10 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
     ...options.lang,
   }
 
-  if (!options.useFunc) options.useFunc = originUseFunc
-  if (!options.useHttp) options.useHttp = originUseHttp
-  if (!options.useKnex) options.useKnex = originUseKnex
-
   if (!options.stepId) throw Error(options.lang.stepIdRequired)
 
-  return options.useFunc(function () {
-    const http = options.useHttp<BaseActionParams<Steps[TName]['data']>>({
+  return useFunc(function () {
+    const http = useHttp<BaseActionParams<Steps[TName]['data']>>({
       validator: {
         params: {
           rules: {
@@ -151,10 +149,13 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
         }
       }
     })
-    const knex = options.useKnex()
+    const knex = useKnex()
 
     return async function () {
-      const user = options.getUser ? await options.getUser(http) : null
+      const user = options.getUser ? await options.getUser({
+        http,
+        knex,
+      }) : null
 
       switch (http.params.action) {
         case 'get':
@@ -222,6 +223,14 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
             if (http.params.note) record.note = http.params.note
             if (http.params.previousId) record.previousId = http.params.previousId
             if (http.params.unlockedAt) record.unlockedAt = new Date(http.params.unlockedAt)
+
+            if (options.before)
+              await options.before({
+                record,
+                data: record.data,
+                trx,
+                user,
+              })
 
             const save = async function () {
               if (options.summary) record.summary = await options.summary({

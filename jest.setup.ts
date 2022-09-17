@@ -75,7 +75,7 @@ DROP TABLE IF EXISTS steps;
 CREATE TABLE steps (
     id SERIAL primary key,
     name varchar not null,
-    status varchar not null,
+    enabled boolean not null default true,
     "createdAt" timestamp with time zone DEFAULT now(),
     "updatedAt" timestamp with time zone DEFAULT CURRENT_TIMESTAMP
 );`)
