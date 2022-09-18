@@ -9,6 +9,9 @@ export type StepRecord<T = any> = {
   stepId: keyof Steps
 
   previousId: string
+  previousStepId: string
+  previousUserId: string
+
   ancestorIds: string[]
 
   status: StepRecordStatus

@@ -122,13 +122,14 @@ function buildActions (props: {
   http: Http
 }) {
   async function save () {
-    if (props.options.summary) props.record.summary = await props.options.summary({
-      step: props.step,
-      user: props.user,
-      record: props.record,
-      data: props.record.data,
-      trx: props.trx,
-    })
+    if (props.options.summary)
+      props.record.summary = await props.options.summary({
+        step: props.step,
+        user: props.user,
+        record: props.record,
+        data: props.record.data,
+        trx: props.trx,
+      })
 
     props.record.updatedBy = props.user.id
 
@@ -144,9 +145,14 @@ function buildActions (props: {
   }
 
   async function createRecord (recordProps: BaseActionParams<any>) {
+    if (!props.record.id && !props.saved)
+      await save()
     return await props.cf.invokeSync(`${props.options.basePath || 'steps'}/${recordProps.stepId}/index`, {
       headers: { cookie: props.http.session.config.key + '=' + props.http.session.encode(JSON.stringify({ aid: props.user.id })) },
-      body: recordProps,
+      body: {
+        ...recordProps,
+        previousId: props.record.id,
+      },
     })
   }
 
@@ -284,7 +290,13 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
             if (http.params.userId) record.userId = http.params.userId
             if (http.params.data) record.data = http.params.data
             if (http.params.note) record.note = http.params.note
-            if (http.params.previousId) record.previousId = http.params.previousId
+            let previous: Partial<StepRecord>
+            if (http.params.previousId) {
+              record.previousId = http.params.previousId
+              previous = await trx('step_records').where('id', record.previousId).first()
+              record.previousStepId = previous.stepId as string
+              record.previousUserId = previous.userId
+            }
             if (http.params.unlockedAt) record.unlockedAt = new Date(http.params.unlockedAt)
 
             if (options.before)

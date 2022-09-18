@@ -43,6 +43,8 @@ CREATE TABLE step_records (
     "stepId" varchar not null,
 
     "previousId" varchar,
+    "previousStepId" varchar,
+    "previousUserId" varchar,
     "ancestorIds" character varying[] DEFAULT '{}'::character varying[] not null,
 
     status varchar not null,
