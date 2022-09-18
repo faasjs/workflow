@@ -25,6 +25,16 @@ const actions: StepRecordAction[] = [
 ]
 
 describe('hook', () => {
+  beforeEach(async () => {
+    await query('steps').insert({
+      id: 'stepId',
+      name: 'name',
+    })
+    await query('steps').insert({
+      id: 'basic',
+      name: 'name',
+    })
+  })
   describe('should valid basic params', () => {
     const func = test(useStepRecordFunc({
       stepId: 'stepId',
@@ -77,17 +87,21 @@ describe('hook', () => {
           status: 'draft',
         }).returning('*').then(r => r[0])
 
-        expect(await func.JSONhandler({
+        const { data } = await func.JSONhandler({
           action: 'get',
           id: record.id,
-        })).toMatchObject({
-          statusCode: 200,
-          data: {
+        })
+        expect(data).toMatchObject({
+          step: {
+            id: 'basic',
+            name: 'name',
+          },
+          record: {
             id: record.id,
             status: 'draft',
             stepId: 'basic',
             data: {},
-          }
+          },
         })
       })
 
@@ -133,13 +147,17 @@ describe('hook', () => {
           stepId: 'basic',
           status: 'draft',
         }).returning('*').then(r => r[0])
-        1
+
         expect(await func.JSONhandler({
           action: 'list',
           id: record.id,
         })).toMatchObject({
           statusCode: 200,
           data: {
+            step: {
+              id: 'basic',
+              name: 'name',
+            },
             rows: [
               {
                 id: record.id,
@@ -210,7 +228,10 @@ describe('hook', () => {
       expect(await func.JSONhandler({
         action,
         data: { productName: 'name' },
-      })).toMatchObject({ statusCode: 201 })
+      })).toMatchObject({
+        statusCode: 200,
+        data: {}
+      })
 
       const record = await query('step_records').first()
 
