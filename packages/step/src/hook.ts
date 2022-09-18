@@ -229,7 +229,10 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
               user,
             })
 
-          return await knex.query('step_records').where({ id: http.params.id }).first()
+          return {
+            step,
+            record: await knex.query('step_records').where({ id: http.params.id }).first()
+          }
         case 'list': {
           options.pagination = Object.assign({
             current: 1,
@@ -250,6 +253,7 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
             .offset((options.pagination.current - 1) * options.pagination.pageSize)
 
           return {
+            step,
             rows,
             pagination: {
               current: options.pagination.current,
