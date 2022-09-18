@@ -136,7 +136,7 @@ function buildActions (props: {
       props.record = await props.trx('step_records').where({ id: props.record.id }).update(props.record).returning('*').then(rows => rows[0])
     else {
       props.record.createdBy = props.user.id
-      props.record = await props.trx('step_records').insert(props.record).returning('*').then(rows => rows[0])
+      props.record = Object.assign(props.record, await props.trx('step_records').insert(props.record).returning('*').then(rows => rows[0]))
     }
     props.saved = true
 

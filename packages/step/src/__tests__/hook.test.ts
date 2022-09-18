@@ -257,15 +257,17 @@ describe('hook', () => {
         }
       }))
 
-      expect(await func.JSONhandler({
+      const { data } = await func.JSONhandler({
         action,
         data: { productName: 'name' },
-      })).toMatchObject({
-        statusCode: 200,
-        data: { productName: 'test' },
       })
 
       const record = await query('step_records').first()
+
+      expect(data).toMatchObject({
+        id: record.id,
+        productName: 'test',
+      })
 
       expect(record).toMatchObject({
         status: Status[action],
