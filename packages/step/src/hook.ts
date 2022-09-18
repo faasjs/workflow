@@ -144,7 +144,7 @@ function buildActions (props: {
   }
 
   async function createRecord (recordProps: BaseActionParams<any>) {
-    return await props.cf.invokeSync(`${props.options.basePath || 'steps'}/${recordProps.stepId}`, {
+    return await props.cf.invokeSync(`${props.options.basePath || 'steps'}/${recordProps.stepId}/index`, {
       headers: { cookie: props.http.session.config.key + '=' + props.http.session.encode(JSON.stringify({ aid: props.user.id })) },
       body: recordProps,
     })
