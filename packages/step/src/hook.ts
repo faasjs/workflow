@@ -157,6 +157,12 @@ function buildActions (props: {
         ...recordProps,
         previousId: props.record.id,
       },
+    }).then(res => {
+      if (res.originBody) {
+        const body = JSON.parse(res.originBody)
+        return body.error ? Promise.reject(Error(body.error.message)) : body.data
+      }
+      return Promise.reject(res.body || res.statusCode)
     })
   }
 
