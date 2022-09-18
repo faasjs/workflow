@@ -27,7 +27,6 @@
     "@faasjs/http": "*",
     "@faasjs/cloud_function": "*",
     "@faasjs/knex": "*",
-    "@faasjs/request": "*",
     "pg": "*"
   },
   "devDependencies": {

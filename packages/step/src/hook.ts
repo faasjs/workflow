@@ -1,5 +1,6 @@
 import { Steps } from '@faasjs/workflow-types'
 import { Func, useFunc } from '@faasjs/func'
+import { CloudFunction, useCloudFunction } from '@faasjs/cloud_function'
 import {
   useHttp, HttpError, Http
 } from '@faasjs/http'
@@ -11,7 +12,6 @@ import { Lang, LangEn } from './lang'
 import { Status, Times } from './enum'
 import { StepRecord, StepRecordAction } from './record'
 import { Step } from './step'
-import { request } from '@faasjs/request'
 
 type BaseContext<TName extends keyof Steps> = {
   step: Step
@@ -65,6 +65,11 @@ export type ListPagination = {
 export type UseStepRecordFuncOptions<TName extends keyof Steps> = {
   stepId: TName
 
+  /**
+   * `steps` as default
+   */
+  basePath?: string
+
   get?: (context: {
     id: string
     stepId: TName
@@ -113,6 +118,7 @@ function buildActions (props: {
   user: User
   trx: K.Transaction
   saved: boolean
+  cf: CloudFunction
   http: Http
 }) {
   async function save () {
@@ -138,11 +144,8 @@ function buildActions (props: {
   }
 
   async function createRecord (recordProps: BaseActionParams<any>) {
-    return await request(`/steps/${recordProps.stepId}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: props.http.config.config.cookie.session.key + '=' + props.http.session.encode({ aid: props.user.id }),
-      },
+    return await props.cf.invokeSync(`${props.options.basePath || 'steps'}/${recordProps.stepId}`, {
+      headers: { cookie: props.http.session.config.key + '=' + props.http.session.encode(JSON.stringify({ aid: props.user.id })) },
       body: recordProps,
     })
   }
@@ -162,6 +165,7 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
   if (!options.stepId) throw Error(options.lang.stepIdRequired)
 
   return useFunc(function () {
+    const cf = useCloudFunction()
     const http = useHttp<BaseActionParams<Steps[TName]['data']>>({
       validator: {
         params: {
@@ -295,6 +299,7 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
               user,
               trx,
               saved,
+              cf,
               http,
             })
 

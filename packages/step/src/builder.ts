@@ -12,6 +12,7 @@ export type BuilderOptions = {
     http: Http
     knex: Knex
   }) => Promise<User>
+  basePath?: string
 }
 
 /**
