@@ -28,7 +28,8 @@ describe('hook', () => {
   describe('should valid basic params', () => {
     const func = test(useStepRecordFunc({
       stepId: 'stepId',
-      summary: async () => 'summary'
+      summary: async () => 'summary',
+      getUser: async () => Promise.resolve({ id: 'test' }),
     }))
 
     it('without params', async () => {
@@ -65,7 +66,10 @@ describe('hook', () => {
 
   describe('actions', () => {
     describe('get', () => {
-      const func = test(useStepRecordFunc({ stepId: 'basic' }))
+      const func = test(useStepRecordFunc({
+        stepId: 'basic',
+        getUser: async () => Promise.resolve({ id: 'test' }),
+      }))
 
       it('should work with record', async () => {
         const record = await query('step_records').insert({
@@ -119,7 +123,10 @@ describe('hook', () => {
     })
 
     describe('list', () => {
-      const func = test(useStepRecordFunc({ stepId: 'basic' }))
+      const func = test(useStepRecordFunc({
+        stepId: 'basic',
+        getUser: async () => Promise.resolve({ id: 'test' }),
+      }))
 
       it('should work with record', async () => {
         const record = await query('step_records').insert({
@@ -153,6 +160,7 @@ describe('hook', () => {
       it('should work with handler', async () => {
         const func = test(useStepRecordFunc({
           stepId: 'basic',
+          getUser: async () => Promise.resolve({ id: 'test' }),
           list: async () => ({
             rows: [
               {
@@ -195,6 +203,7 @@ describe('hook', () => {
     it.each(actions)('%s should work without handler', async (action) => {
       const func = test(useStepRecordFunc({
         stepId: 'basic',
+        getUser: async () => Promise.resolve({ id: 'test' }),
         summary: async ({ data }) => `${data.productName}`
       }))
 
@@ -216,6 +225,7 @@ describe('hook', () => {
     it.each(actions)('%s should work with handler', async (action) => {
       const func = test(useStepRecordFunc({
         stepId: 'basic',
+        getUser: async () => Promise.resolve({ id: 'test' }),
         summary: async ({ data }) => `${data.productName}`,
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore

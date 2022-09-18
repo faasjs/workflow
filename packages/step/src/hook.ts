@@ -3,15 +3,19 @@ import { Func, useFunc } from '@faasjs/func'
 import {
   useHttp, HttpError, Http
 } from '@faasjs/http'
-import { Knex, useKnex } from '@faasjs/knex'
+import {
+  Knex, query, useKnex
+} from '@faasjs/knex'
 import { Knex as K } from 'knex'
 import { Lang, LangEn } from './lang'
 import { Status, Times } from './enum'
 import { StepRecord, StepRecordAction } from './record'
+import { Step } from './step'
+import { request } from '@faasjs/request'
 
 type BaseContext<TName extends keyof Steps> = {
+  step: Step
   record: Partial<StepRecord<Steps[TName]['data']>>
-
   data: Steps[TName]['data']
 
   trx: K.Transaction
@@ -43,6 +47,7 @@ type Save = () => Promise<StepRecord>
 
 type BaseActionOptions<TName extends keyof Steps> = BaseContext<TName> & {
   save: Save
+  createRecord(props: BaseActionParams<any>): Promise<any>
 }
 
 export type User = {
@@ -101,6 +106,53 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps> = {
   before?: (context: BaseContext<TName>) => Promise<void>
 }
 
+function buildActions (props: {
+  options: UseStepRecordFuncOptions<any>
+  step: Step
+  record: Partial<StepRecord>
+  user: User
+  trx: K.Transaction
+  saved: boolean
+  http: Http
+}) {
+  async function save () {
+    if (props.options.summary) props.record.summary = await props.options.summary({
+      step: props.step,
+      user: props.user,
+      record: props.record,
+      data: props.record.data,
+      trx: props.trx,
+    })
+
+    props.record.updatedBy = props.user.id
+
+    if (props.record.id)
+      props.record = await props.trx('step_records').where({ id: props.record.id }).update(props.record).returning('*').then(rows => rows[0])
+    else {
+      props.record.createdBy = props.user.id
+      props.record = await props.trx('step_records').insert(props.record).returning('*').then(rows => rows[0])
+    }
+    props.saved = true
+
+    return props.record as StepRecord
+  }
+
+  async function createRecord (recordProps: BaseActionParams<any>) {
+    return await request(`/steps/${recordProps.stepId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: props.http.config.config.cookie.session.key + '=' + props.http.session.encode({ aid: props.user.id }),
+      },
+      body: recordProps,
+    })
+  }
+
+  return {
+    save,
+    createRecord
+  }
+}
+
 export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRecordFuncOptions<TName>) : Func {
   options.lang = !options.lang ? LangEn : {
     ...LangEn,
@@ -150,8 +202,11 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
       }
     })
     const knex = useKnex()
+    let step: Step
 
     return async function () {
+      if (!step) step = await query('steps').where('id', options.stepId).first()
+
       const user = options.getUser ? await options.getUser({
         http,
         knex,
@@ -205,7 +260,7 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
 
           return await knex.transaction(async trx => {
             let record: Partial<StepRecord>
-            let saved = false
+            const saved = false
             if (http.params.id) {
               record = await trx('step_records').where({ id: http.params.id }).first()
 
@@ -226,32 +281,22 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
 
             if (options.before)
               await options.before({
+                step,
                 record,
                 data: record.data,
                 trx,
                 user,
               })
 
-            const save = async function () {
-              if (options.summary) record.summary = await options.summary({
-                user,
-                record,
-                data: record.data,
-                trx,
-              })
-
-              record.updatedBy = user?.id
-
-              if (http.params.id)
-                record = await trx('step_records').where({ id: http.params.id }).update(record).returning('*').then(rows => rows[0])
-              else {
-                record.createdBy = user?.id
-                record = await trx('step_records').insert(record).returning('*').then(rows => rows[0])
-              }
-              saved = true
-
-              return record as StepRecord
-            }
+            const actions = buildActions({
+              options,
+              step,
+              record,
+              user,
+              trx,
+              saved,
+              http,
+            })
 
             record.status = Status[http.params.action as StepRecordAction]
 
@@ -264,14 +309,16 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
 
             if (options[http.params.action as StepRecordAction])
               result = await options[http.params.action as StepRecordAction]({
+                step,
                 user,
                 record,
                 data: record.data,
                 trx,
-                save,
+                save: actions.save,
+                createRecord: actions.createRecord,
               })
 
-            if (!saved) await save()
+            if (!saved) await actions.save()
 
             return result
           })
