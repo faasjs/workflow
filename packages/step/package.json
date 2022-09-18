@@ -2,7 +2,9 @@
   "name": "@faasjs/workflow-step",
   "version": "1.0.0",
   "license": "MIT",
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "module": "dist/index.mjs",
   "homepage": "https://github.com/faasjs/workflow/blob/main/step",
   "repository": {
     "type": "git",
