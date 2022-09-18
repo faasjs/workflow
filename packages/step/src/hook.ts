@@ -27,7 +27,11 @@ type BaseActionParams<T> = {
   action: StepRecordAction | 'get' | 'list'
 
   stepId: string
+
   previousId?: string
+  previousStepId?: string
+  previousUserId?: string
+
   userId?: string
 
   note?: string
@@ -134,7 +138,7 @@ function buildActions (props: {
     props.record.updatedBy = props.user.id
 
     if (props.record.id)
-      props.record = await props.trx('step_records').where({ id: props.record.id }).update(props.record).returning('*').then(rows => rows[0])
+      props.record = Object.assign(props.record, await props.trx('step_records').where('id', props.record.id).update(props.record).returning('*').then(rows => rows[0]))
     else {
       props.record.createdBy = props.user.id
       props.record = Object.assign(props.record, await props.trx('step_records').insert(props.record).returning('*').then(rows => rows[0]))
@@ -237,7 +241,7 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
 
           return {
             step,
-            record: await knex.query('step_records').where({ id: http.params.id }).first()
+            record: await knex.query('step_records').where('id', http.params.id).first()
           }
         case 'list': {
           options.pagination = Object.assign({
@@ -276,7 +280,7 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
             let record: Partial<StepRecord>
             const saved = false
             if (http.params.id) {
-              record = await trx('step_records').where({ id: http.params.id }).first()
+              record = await trx('step_records').where('id', http.params.id).first()
 
               if (!record)
                 throw Error(options.lang.recordNotFound(http.params.id))
@@ -290,12 +294,11 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
             if (http.params.userId) record.userId = http.params.userId
             if (http.params.data) record.data = http.params.data
             if (http.params.note) record.note = http.params.note
-            let previous: Partial<StepRecord>
+
             if (http.params.previousId) {
               record.previousId = http.params.previousId
-              previous = await trx('step_records').where('id', record.previousId).first()
-              record.previousStepId = previous.stepId as string
-              record.previousUserId = previous.userId
+              record.previousStepId = http.params.previousStepId
+              record.previousUserId = http.params.previousUserId
             }
             if (http.params.unlockedAt) record.unlockedAt = new Date(http.params.unlockedAt)
 
