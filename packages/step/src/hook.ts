@@ -310,7 +310,7 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
             if (http.params.action === 'done' && record.createdAt)
               record.duration = new Date().getTime() - record.createdAt.getTime()
 
-            let result
+            let result: Record<string, any> = {}
 
             if (options[http.params.action as StepRecordAction])
               result = await options[http.params.action as StepRecordAction]({
@@ -324,6 +324,8 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
               })
 
             if (!saved) await actions.save()
+
+            if (!result.id) result.id = record.id
 
             return result
           })
