@@ -32,6 +32,8 @@ type BaseActionParams<T> = {
   previousStepId?: string
   previousUserId?: string
 
+  ancestorIds?: string[]
+
   userId?: string
 
   note?: string
@@ -156,6 +158,9 @@ function buildActions (props: {
       body: {
         ...recordProps,
         previousId: props.record.id,
+        previousStepId: props.options.stepId,
+        previousUserId: props.user.id,
+        ancestorIds: props.record.ancestorIds.concat(props.record.id)
       },
     }).then(res => {
       if (res.originBody) {
@@ -305,6 +310,7 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
               record.previousId = http.params.previousId
               record.previousStepId = http.params.previousStepId
               record.previousUserId = http.params.previousUserId
+              record.ancestorIds = http.params.ancestorIds
             }
             if (http.params.unlockedAt) record.unlockedAt = new Date(http.params.unlockedAt)
 
