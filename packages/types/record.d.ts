@@ -1,4 +1,4 @@
-import type { Steps } from '@faasjs/workflow-types'
+import type { Steps } from './steps'
 
 export type StepRecordAction = 'draft' | 'hang' | 'done' | 'cancel' | 'lock' | 'unlock' | 'undo'
 

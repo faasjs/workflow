@@ -13,10 +13,6 @@
     "url": "https://github.com/faasjs/workflow/issues"
   },
   "funding": "https://github.com/sponsors/faasjs",
-  "files": [
-    "index.d.ts",
-    "steps.d.ts"
-  ],
   "engines": {
     "npm": ">=8.0.0",
     "node": ">=16.0.0"
