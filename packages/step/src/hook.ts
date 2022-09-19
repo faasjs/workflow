@@ -1,4 +1,6 @@
-import { Steps } from '@faasjs/workflow-types'
+import type {
+  Steps, StepRecord, StepRecordAction, Step 
+} from '@faasjs/workflow-types'
 import { Func, useFunc } from '@faasjs/func'
 import { CloudFunction, useCloudFunction } from '@faasjs/cloud_function'
 import {
@@ -10,8 +12,6 @@ import {
 import { Knex as K } from 'knex'
 import { Lang, LangEn } from './lang'
 import { Status, Times } from './enum'
-import { StepRecord, StepRecordAction } from './record'
-import { Step } from './step'
 
 type BaseContext<TName extends keyof Steps> = {
   step: Step
