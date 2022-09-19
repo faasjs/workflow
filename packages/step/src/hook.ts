@@ -24,7 +24,7 @@ type BaseContext<TName extends keyof Steps> = {
 }
 
 type BaseActionParams<T> = {
-  action: StepRecordAction | 'get' | 'list'
+  action: StepRecordAction | 'new' | 'get' | 'list'
 
   stepId: string
 
@@ -76,17 +76,28 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps> = {
    */
   basePath?: string
 
+  new?: (context: {
+    stepId: TName
+    knex: Knex
+    user?: User
+  }) => Promise<{
+    step: Partial<Step>
+  }>
   get?: (context: {
     id: string
     stepId: TName
     knex: Knex
     user?: User
-  }) => Promise<Partial<StepRecord>>
+  }) => Promise<{
+    step: Partial<Step>
+    record: Partial<StepRecord>
+  }>
   list?: (context: {
     stepId: TName
     knex: Knex
     user?: User
   }) => Promise<{
+    step: Partial<Step>
     rows: Partial<StepRecord>[]
     pagination: ListPagination
   }>
@@ -194,6 +205,7 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
             action: {
               required: true,
               in: [
+                'new',
                 'get',
                 'list',
                 'draft',
@@ -238,6 +250,15 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
       }) : null
 
       switch (http.params.action) {
+        case 'new':
+          if (options.new)
+            return options.new({
+              stepId: options.stepId,
+              knex,
+              user,
+            })
+
+          return { step }
         case 'get':
           if (!http.params.id)
             throw Error(options.lang.idRequired)
@@ -289,7 +310,9 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
 
           return await knex.transaction(async trx => {
             let record: Partial<StepRecord>
+
             const saved = false
+
             if (http.params.id) {
               record = await trx('step_records').where('id', http.params.id).first()
 

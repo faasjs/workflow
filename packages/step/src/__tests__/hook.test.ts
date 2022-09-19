@@ -75,6 +75,35 @@ describe('hook', () => {
   })
 
   describe('actions', () => {
+    describe('new', () => {
+      const func = test(useStepRecordFunc({
+        stepId: 'basic',
+        getUser: async () => Promise.resolve({ id: 'test' }),
+      }))
+
+      it('should work', async () => {
+        const { data } = await func.JSONhandler({ action: 'new' })
+        expect(data).toMatchObject({
+          step: {
+            id: 'basic',
+            name: 'name',
+          }
+        })
+      })
+
+      it('should work with handler', async () => {
+        const func = test(useStepRecordFunc({
+          stepId: 'basic',
+          new: async () => ({ step: { id: 'id' } })
+        }))
+
+        expect(await func.JSONhandler({ action: 'new' })).toMatchObject({
+          statusCode: 200,
+          data: { step: { id: 'id' } }
+        })
+      })
+    })
+
     describe('get', () => {
       const func = test(useStepRecordFunc({
         stepId: 'basic',
@@ -109,9 +138,12 @@ describe('hook', () => {
         const func = test(useStepRecordFunc({
           stepId: 'basic',
           get: async () => ({
-            id: 'id',
-            status: 'draft',
-            data: {}
+            step: { id: 'id' },
+            record: {
+              id: 'id',
+              status: 'draft',
+              data: {},
+            }
           })
         }))
 
@@ -121,9 +153,12 @@ describe('hook', () => {
         })).toMatchObject({
           statusCode: 200,
           data: {
-            id: 'id',
-            status: 'draft',
-            data: {}
+            step: { id: 'id' },
+            record: {
+              id: 'id',
+              status: 'draft',
+              data: {},
+            }
           }
         })
       })
@@ -180,6 +215,7 @@ describe('hook', () => {
           stepId: 'basic',
           getUser: async () => Promise.resolve({ id: 'test' }),
           list: async () => ({
+            step: { id: 'id' },
             rows: [
               {
                 id: 'id',
@@ -201,6 +237,7 @@ describe('hook', () => {
         })).toMatchObject({
           statusCode: 200,
           data: {
+            step: { id: 'id' },
             rows: [
               {
                 id: 'id',

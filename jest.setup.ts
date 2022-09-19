@@ -78,8 +78,12 @@ CREATE TABLE steps (
     id varchar primary key,
     name varchar not null,
     enabled boolean not null default true,
+    roles character varying[] DEFAULT '{}'::character varying[] not null,
+    actions character varying[] DEFAULT '{}'::character varying[] not null,
     "createdAt" timestamp with time zone DEFAULT now(),
-    "updatedAt" timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+    "updatedAt" timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    "createdBy" varchar,
+    "updatedBy" varchar
 );`)
   })
 
