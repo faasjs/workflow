@@ -38,7 +38,6 @@ describe('hook', () => {
   describe('should valid basic params', () => {
     const func = test(useStepRecordFunc({
       stepId: 'stepId',
-      summary: async () => 'summary',
       getUser: async () => Promise.resolve({ id: 'test' }),
     }))
 
@@ -259,7 +258,7 @@ describe('hook', () => {
       const func = test(useStepRecordFunc({
         stepId: 'basic',
         getUser: async () => Promise.resolve({ id: 'test' }),
-        summary: async ({ data }) => `${data.productName}`
+        summary: async ({ data }) => ({ name: `${data.productName}` })
       }))
 
       expect(await func.JSONhandler({
@@ -274,7 +273,7 @@ describe('hook', () => {
 
       expect(record).toMatchObject({
         status: Status[action],
-        summary: 'name',
+        summary: { name: 'name' },
       })
 
       expect(record[Times[action]]).toBeDefined()
@@ -284,7 +283,6 @@ describe('hook', () => {
       const func = test(useStepRecordFunc({
         stepId: 'basic',
         getUser: async () => Promise.resolve({ id: 'test' }),
-        summary: async ({ data }) => `${data.productName}`,
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         [`${action}`]: async ({ data }) => {
@@ -308,8 +306,8 @@ describe('hook', () => {
 
       expect(record).toMatchObject({
         status: Status[action],
-        summary: 'test',
-        data: { productName: 'test' }
+        summary: { productName: 'test' },
+        data: { productName: 'test' },
       })
 
       expect(record[Times[action]]).toBeDefined()
@@ -319,7 +317,6 @@ describe('hook', () => {
       const func = test(useStepRecordFunc<'basic', { key: string }>({
         stepId: 'basic',
         getUser: async () => Promise.resolve({ id: 'test' }),
-        summary: async ({ data }) => `${data.productName}`,
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         [`${action}`]: async ({ data, key }) => {
@@ -344,8 +341,8 @@ describe('hook', () => {
 
       expect(record).toMatchObject({
         status: Status[action],
-        summary: 'test',
-        data: { productName: 'test' }
+        summary: { productName: 'test' },
+        data: { productName: 'test' },
       })
 
       expect(record[Times[action]]).toBeDefined()

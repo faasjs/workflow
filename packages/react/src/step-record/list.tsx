@@ -12,7 +12,10 @@ export function StepRecordList (props: {
       items={[
         { id: 'id' },
         { id: 'status' },
-        { id: 'summary' },
+        {
+          id: 'summary',
+          render: (v: any) => JSON.stringify(v, null, 2),
+        },
         { id: 'note' },
         {
           id: 'previousId',

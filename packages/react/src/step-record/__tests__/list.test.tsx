@@ -20,7 +20,7 @@ describe('StepRecordList', () => {
               {
                 id: 'id',
                 status: 'draft',
-                summary: 'summary',
+                summary: { key: 'value' },
                 createdAt: Date.now()
               }
             ],
@@ -43,6 +43,6 @@ describe('StepRecordList', () => {
   it('should work', async () => {
     render(<StepRecordList stepId='stepId' />)
 
-    expect(await screen.findByText('summary')).toBeInTheDocument()
+    expect(await screen.findByRole('table')).toHaveTextContent('"value"')
   })
 })

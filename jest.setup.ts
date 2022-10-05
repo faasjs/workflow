@@ -68,7 +68,7 @@ CREATE TABLE step_records (
 
     duration numeric DEFAULT 0 not null,
 
-    summary varchar,
+    summary jsonb DEFAULT '{}'::jsonb not null,
     note varchar
 );
 

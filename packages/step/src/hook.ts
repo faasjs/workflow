@@ -108,7 +108,8 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend = any> =
     pageSize?: number
   }
 
-  summary?: (context: BaseContext<TName>) => Promise<string>
+  /** use data as summary as default */
+  summary?: (context: BaseContext<TName>) => Promise<Steps[TName]['summary']>
 
   draft?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['draft']>
   hang?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['hang']>
@@ -149,6 +150,8 @@ function buildActions (props: {
         data: props.record.data,
         trx: props.trx,
       })
+    else
+      props.record.summary = props.record.data
 
     props.record.updatedBy = props.user?.id
 
@@ -325,7 +328,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend = any> (
             } else
               record = {
                 stepId: options.stepId,
-                summary: null,
+                summary: {},
                 createdAt: new Date()
               }
 
