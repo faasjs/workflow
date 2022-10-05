@@ -1,4 +1,4 @@
-import { StepRecordAction } from '../record'
+import { StepRecordAction } from '@faasjs/workflow-types'
 import { builder } from '../builder'
 import { LangZh } from '../lang'
 import { test } from '@faasjs/test'
@@ -58,6 +58,23 @@ describe('builder', () => {
         statusCode: 500,
         error: { message: '找不到记录#1' },
       })
+    })
+  })
+
+  it('should work with extends', async () => {
+    const func = test(builder<{ key: string }>({ extends: { key: 'value' } })({
+      stepId: 'stepId',
+      async draft ({ key }) {
+        return { message: key }
+      }
+    }))
+
+    expect(await func.JSONhandler({
+      action: 'draft',
+      data: {},
+    })).toMatchObject({
+      statusCode: 200,
+      data: { message: 'value' },
     })
   })
 })

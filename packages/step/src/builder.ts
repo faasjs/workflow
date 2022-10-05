@@ -13,20 +13,21 @@ export type BuilderOptions = {
     knex: Knex
   }) => Promise<User>
   basePath?: string
+  extends?: any
 }
 
 /**
  * Generate a custom base step builder
  */
-export function builder (builderOptions: BuilderOptions) {
-  return <TName extends keyof Steps>(options: UseStepRecordFuncOptions<TName>) => {
+export function builder<TExtend = any> (builderOptions: BuilderOptions) {
+  return <TName extends keyof Steps>(options: UseStepRecordFuncOptions<TName, TExtend>) => {
     if (options.lang && builderOptions.lang)
       options.lang = {
         ...builderOptions.lang,
         ...options.lang
       }
 
-    return useStepRecordFunc({
+    return useStepRecordFunc<TName, TExtend>({
       ...builderOptions,
       ...options,
     })

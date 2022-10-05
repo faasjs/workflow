@@ -314,5 +314,41 @@ describe('hook', () => {
 
       expect(record[Times[action]]).toBeDefined()
     })
+
+    it.each(actions)('%s should work with handler and extends', async (action) => {
+      const func = test(useStepRecordFunc<'basic', { key: string }>({
+        stepId: 'basic',
+        getUser: async () => Promise.resolve({ id: 'test' }),
+        summary: async ({ data }) => `${data.productName}`,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        [`${action}`]: async ({ data, key }) => {
+          data.productName = 'test'
+
+          return { productName: data[key], }
+        },
+        extends: { key: 'productName' }
+      }))
+
+      const { data } = await func.JSONhandler({
+        action,
+        data: { productName: 'name' },
+      })
+
+      const record = await query('step_records').first()
+
+      expect(data).toMatchObject({
+        id: record.id,
+        productName: 'test',
+      })
+
+      expect(record).toMatchObject({
+        status: Status[action],
+        summary: 'test',
+        data: { productName: 'test' }
+      })
+
+      expect(record[Times[action]]).toBeDefined()
+    })
   })
 })

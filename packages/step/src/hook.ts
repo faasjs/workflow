@@ -1,5 +1,5 @@
 import type {
-  Steps, StepRecord, StepRecordAction, Step 
+  Steps, StepRecord, StepRecordAction, Step
 } from '@faasjs/workflow-types'
 import { Func, useFunc } from '@faasjs/func'
 import { CloudFunction, useCloudFunction } from '@faasjs/cloud_function'
@@ -13,7 +13,7 @@ import { Knex as K } from 'knex'
 import { Lang, LangEn } from './lang'
 import { Status, Times } from './enum'
 
-type BaseContext<TName extends keyof Steps> = {
+type BaseContext<TName extends keyof Steps, TExtend = any> = {
   step: Step
   record: Partial<StepRecord<Steps[TName]['data']>>
   data: Steps[TName]['data']
@@ -21,7 +21,7 @@ type BaseContext<TName extends keyof Steps> = {
   trx: K.Transaction
 
   user?: User
-}
+} & TExtend
 
 type BaseActionParams<T> = {
   action: StepRecordAction | 'new' | 'get' | 'list'
@@ -51,7 +51,7 @@ type BaseActionParams<T> = {
 
 type Save = () => Promise<StepRecord>
 
-type BaseActionOptions<TName extends keyof Steps> = BaseContext<TName> & {
+type BaseActionOptions<TName extends keyof Steps, TExtend = any> = BaseContext<TName, TExtend> & {
   save: Save
   createRecord(props: BaseActionParams<any>): Promise<any>
 }
@@ -68,7 +68,7 @@ export type ListPagination = {
   total: number
 }
 
-export type UseStepRecordFuncOptions<TName extends keyof Steps> = {
+export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend = any> = {
   stepId: TName
 
   /**
@@ -110,13 +110,13 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps> = {
 
   summary?: (context: BaseContext<TName>) => Promise<string>
 
-  draft?: (options: BaseActionOptions<TName>) => Promise<Steps[TName]['draft']>
-  hang?: (options: BaseActionOptions<TName>) => Promise<Steps[TName]['hang']>
-  done?: (options: BaseActionOptions<TName>) => Promise<Steps[TName]['done']>
-  cancel?: (options: BaseActionOptions<TName>) => Promise<Steps[TName]['cancel']>
-  lock?: (options: BaseActionOptions<TName>) => Promise<Steps[TName]['lock']>
-  unlock?: (options: BaseActionOptions<TName>) => Promise<Steps[TName]['unlock']>
-  undo?: (options: BaseActionOptions<TName>) => Promise<Steps[TName]['undo']>
+  draft?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['draft']>
+  hang?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['hang']>
+  done?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['done']>
+  cancel?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['cancel']>
+  lock?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['lock']>
+  unlock?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['unlock']>
+  undo?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['undo']>
 
   lang?: Partial<Lang>
 
@@ -126,6 +126,8 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps> = {
   }) => Promise<User>
 
   before?: (context: BaseContext<TName>) => Promise<void>
+
+  extends?: TExtend
 }
 
 function buildActions (props: {
@@ -148,12 +150,12 @@ function buildActions (props: {
         trx: props.trx,
       })
 
-    props.record.updatedBy = props.user.id
+    props.record.updatedBy = props.user?.id
 
     if (props.record.id)
       props.record = Object.assign(props.record, await props.trx('step_records').where('id', props.record.id).update(props.record).returning('*').then(rows => rows[0]))
     else {
-      props.record.createdBy = props.user.id
+      props.record.createdBy = props.user?.id
       props.record = Object.assign(props.record, await props.trx('step_records').insert(props.record).returning('*').then(rows => rows[0]))
     }
     props.saved = true
@@ -165,12 +167,12 @@ function buildActions (props: {
     if (!props.record.id && !props.saved)
       await save()
     return await props.cf.invokeSync(`${props.options.basePath || 'steps'}/${recordProps.stepId}/index`, {
-      headers: { cookie: props.http.session.config.key + '=' + props.http.session.encode(JSON.stringify({ aid: props.user.id })) },
+      headers: { cookie: props.http.session.config.key + '=' + props.http.session.encode(JSON.stringify({ aid: props.user?.id })) },
       body: {
         ...recordProps,
         previousId: props.record.id,
         previousStepId: props.options.stepId,
-        previousUserId: props.user.id,
+        previousUserId: props.user?.id,
         ancestorIds: props.record.ancestorIds.concat(props.record.id)
       },
     }).then(res => {
@@ -188,7 +190,9 @@ function buildActions (props: {
   }
 }
 
-export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRecordFuncOptions<TName>) : Func {
+export function useStepRecordFunc<TName extends keyof Steps, TExtend = any> (
+  options: UseStepRecordFuncOptions<TName, TExtend>
+) : Func {
   options.lang = !options.lang ? LangEn : {
     ...LangEn,
     ...options.lang,
@@ -375,6 +379,7 @@ export function useStepRecordFunc<TName extends keyof Steps> (options: UseStepRe
                 trx,
                 save: actions.save,
                 createRecord: actions.createRecord,
+                ...options.extends,
               })
 
             if (!saved) await actions.save()
