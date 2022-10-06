@@ -1,9 +1,7 @@
 import type{ Http } from '@faasjs/http'
 import type { Knex } from '@faasjs/knex'
-import type { Steps } from '@faasjs/workflow-types'
-import {
-  User, useStepRecordFunc, UseStepRecordFuncOptions
-} from './hook'
+import type { Steps, User } from '@faasjs/workflow-types'
+import { useStepRecordFunc, UseStepRecordFuncOptions } from './hook'
 import type { Lang } from './lang'
 
 export type BuilderOptions = {
