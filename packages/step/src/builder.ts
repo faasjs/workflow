@@ -1,23 +1,19 @@
-import type{ Http } from '@faasjs/http'
-import type { Knex } from '@faasjs/knex'
-import type { Steps, User } from '@faasjs/workflow-types'
+import type { Steps, StepRecordAction } from '@faasjs/workflow-types'
 import { useStepRecordFunc, UseStepRecordFuncOptions } from './hook'
-import type { Lang } from './lang'
-
-export type BuilderOptions = {
-  lang?: Partial<Lang>
-  getUser?: (props: {
-    http: Http
-    knex: Knex
-  }) => Promise<User>
-  basePath?: string
-  extends?: any
-}
 
 /**
- * Generate a custom base step builder
+ * Generate a custom step builder
+ * ```ts
+ * import { LangZh } from '@faasjs/workflow-step'
+ *
+ * const build = builder({
+ *   lang: LangZh,
+ * })
+ * ```
  */
-export function builder<TExtend = any> (builderOptions: BuilderOptions) {
+export function builder<TExtend = any> (
+  builderOptions: Omit<UseStepRecordFuncOptions<any, TExtend>, StepRecordAction | 'stepId'>
+) {
   return <TName extends keyof Steps>(options: UseStepRecordFuncOptions<TName, TExtend>) => {
     if (options.lang && builderOptions.lang)
       options.lang = {
