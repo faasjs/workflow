@@ -1,6 +1,6 @@
 # @faasjs/workflow-step
 
-The step component in FaasJS/Workflow.
+The `Step` and `StepRecord` component in FaasJS/Workflow.
 
 ## Examples
 
