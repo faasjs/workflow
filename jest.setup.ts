@@ -1,5 +1,6 @@
 import { useKnex } from '@faasjs/knex'
 import Knex from 'knex'
+import { up } from './packages/step/src/migrate'
 
 if (typeof window !== 'undefined') {
   require('@testing-library/jest-dom')
@@ -33,58 +34,8 @@ if (typeof window !== 'undefined') {
       connection: process.env.SECRET_KNEX_CONNECTION,
     })
     await knex.raw('DROP SCHEMA IF EXISTS public CASCADE;CREATE SCHEMA public;')
-    await knex.raw(`
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS pg_trgm;
-
-DROP TABLE IF EXISTS step_records;
-CREATE TABLE step_records (
-    id SERIAL primary key,
-    "stepId" varchar not null,
-
-    "previousId" varchar,
-    "previousStepId" varchar,
-    "previousUserId" varchar,
-    "ancestorIds" character varying[] DEFAULT '{}'::character varying[] not null,
-
-    status varchar not null,
-
-    data jsonb DEFAULT '{}'::jsonb not null,
-
-    "userId" varchar,
-
-    "createdAt" timestamp with time zone DEFAULT now(),
-    "createdBy" varchar,
-
-    "updatedAt" timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    "updatedBy" varchar,
-
-    "doneAt" timestamp with time zone,
-    "hangedAt" timestamp with time zone,
-    "canceledAt"  timestamp with time zone,
-    "lockedAt" timestamp with time zone,
-    "unlockedAt" timestamp with time zone,
-    "undoAt" timestamp with time zone,
-
-    duration numeric DEFAULT 0 not null,
-
-    summary jsonb DEFAULT '{}'::jsonb not null,
-    note varchar
-);
-
-
-DROP TABLE IF EXISTS steps;
-CREATE TABLE steps (
-    id varchar primary key,
-    name varchar not null,
-    enabled boolean not null default true,
-    roles character varying[] DEFAULT '{}'::character varying[] not null,
-    actions character varying[] DEFAULT '{}'::character varying[] not null,
-    "createdAt" timestamp with time zone DEFAULT now(),
-    "updatedAt" timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    "createdBy" varchar,
-    "updatedBy" varchar
-);`)
+    await knex.raw('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";CREATE EXTENSION IF NOT EXISTS pg_trgm;')
+    await up(knex)
   })
 
   global.afterAll(async () => {
