@@ -8,8 +8,8 @@ export async function up (knex: Knex): Promise<void> {
     t.boolean('enabled').notNullable().defaultTo(true)
     t.string('createdBy')
     t.string('updatedBy')
-    t.specificType('roles', '_varchar')
-    t.specificType('actions', '_varchar')
+    t.specificType('roles', '_varchar').notNullable().defaultTo('{}')
+    t.specificType('actions', '_varchar').notNullable().defaultTo('{}')
   })
 
   await knex.schema.createTable('step_records', t => {
@@ -19,7 +19,7 @@ export async function up (knex: Knex): Promise<void> {
     t.string('previousId')
     t.string('previousStepId')
     t.string('previousUserId')
-    t.specificType('ancestorIds', '_varchar')
+    t.specificType('ancestorIds', '_varchar').notNullable().defaultTo('{}')
     t.string('status').notNullable()
     t.jsonb('data').notNullable().defaultTo('{}')
     t.string('userId')
