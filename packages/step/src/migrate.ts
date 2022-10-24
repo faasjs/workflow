@@ -2,8 +2,8 @@ import { Knex } from 'knex'
 
 export function base (k: any, t: any, tableName: string) {
   t.string('id').notNullable().defaultTo(k.raw('uuid_generate_v4()')).primary()
-  t.timestamp('createdAt').defaultTo(k.fn.now())
-  t.timestamp('updatedAt').defaultTo(k.fn.now())
+  t.timestamp('createdAt').notNullable().defaultTo(k.fn.now())
+  t.timestamp('updatedAt').notNullable().defaultTo(k.fn.now())
   k.raw(`CREATE OR REPLACE FUNCTION update_timestamp()
   RETURNS TRIGGER AS $$
   BEGIN
