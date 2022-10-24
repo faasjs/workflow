@@ -10,6 +10,9 @@ declare module '@faasjs/workflow-types/steps' {
       data: {
         productName: string
       }
+      summary: {
+        name: string
+      }
     }
   }
 }

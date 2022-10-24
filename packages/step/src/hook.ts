@@ -16,7 +16,7 @@ import {
   buildActions, BaseActionParams, BaseActionOptions,
 } from './action'
 
-export type BaseContext<TName extends keyof Steps, TExtend = any> = {
+export type BaseContext<TName extends keyof Steps, TExtend extends Record<string, any>> = {
   step: Step
   record: Partial<StepRecord<Steps[TName]['data']>>
   data: Steps[TName]['data']
@@ -32,7 +32,7 @@ export type ListPagination = {
   total: number
 }
 
-export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend = any> = {
+export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends Record<string, any>> = {
   stepId: TName
 
   /**
@@ -73,7 +73,7 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend = any> =
   }
 
   /** use data as summary as default */
-  summary?: (context: BaseContext<TName>) => Promise<Steps[TName]['summary']>
+  summary?: (context: BaseContext<TName, TExtend>) => Promise<Steps[TName]['summary']>
 
   draft?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['draft']>
   hang?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['hang']>
@@ -97,7 +97,7 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend = any> =
   extends?: TExtend
 }
 
-export function useStepRecordFunc<TName extends keyof Steps, TExtend = any> (
+export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Record<string, any>> (
   options: UseStepRecordFuncOptions<TName, TExtend>
 ) : Func {
   options.lang = !options.lang ? LangEn : {

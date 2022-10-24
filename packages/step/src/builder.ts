@@ -11,7 +11,7 @@ import { useStepRecordFunc, UseStepRecordFuncOptions } from './hook'
  * })
  * ```
  */
-export function builder<TExtend = any> (
+export function builder<TExtend extends Record<string, any>> (
   builderOptions: Omit<UseStepRecordFuncOptions<any, TExtend>, StepRecordAction | 'stepId'>
 ) {
   return <TName extends keyof Steps>(options: UseStepRecordFuncOptions<TName, TExtend>) => {
