@@ -1,9 +1,21 @@
 import { Knex } from 'knex'
 
+export function base (k: any, t: any, tableName: string) {
+  t.string('id').notNullable().defaultTo(k.raw('uuid_generate_v4()')).primary()
+  t.timestamp('createdAt').defaultTo(k.fn.now())
+  t.timestamp('updatedAt').defaultTo(k.fn.now())
+  k.raw(`CREATE OR REPLACE FUNCTION update_timestamp()
+  RETURNS TRIGGER AS $$
+  BEGIN
+        NEW.updatedAt = now();
+        RETURN NEW;
+  END;`)
+  k.raw(`CREATE TRIGGER ${tableName}_timestamp BEFORE UPDATE ON ${tableName} FOR EACH ROW EXECUTE PROCEDURE update_timestamp();`)
+}
+
 export async function up (knex: Knex): Promise<void> {
   await knex.schema.createTable('steps', t => {
-    t.string('id').defaultTo(knex.raw('uuid_generate_v4()')).primary()
-    t.timestamps(true, true, true)
+    base(knex, t, 'steps')
     t.string('name')
     t.boolean('enabled').notNullable().defaultTo(true)
     t.string('createdBy')
@@ -13,7 +25,7 @@ export async function up (knex: Knex): Promise<void> {
   })
 
   await knex.schema.createTable('step_records', t => {
-    t.string('id').defaultTo(knex.raw('uuid_generate_v4()')).primary()
+    base(knex, t, 'step_records')
     t.timestamps(true, true, true)
     t.string('stepId').notNullable()
     t.string('previousId')
