@@ -13,20 +13,23 @@ export function base (k: any, t: any, tableName: string) {
   k.raw(`CREATE TRIGGER ${tableName}_timestamp BEFORE UPDATE ON ${tableName} FOR EACH ROW EXECUTE PROCEDURE update_timestamp();`)
 }
 
+export function baseWithBy (k: any, t: any, tableName: string) {
+  base(k, t, tableName)
+  t.string('createdBy')
+  t.string('updatedBy')
+}
+
 export async function up (knex: Knex): Promise<void> {
   await knex.schema.createTable('steps', t => {
-    base(knex, t, 'steps')
+    baseWithBy(knex, t, 'steps')
     t.string('name')
     t.boolean('enabled').notNullable().defaultTo(true)
-    t.string('createdBy')
-    t.string('updatedBy')
     t.specificType('roles', '_varchar').notNullable().defaultTo('{}')
     t.specificType('actions', '_varchar').notNullable().defaultTo('{}')
   })
 
   await knex.schema.createTable('step_records', t => {
-    base(knex, t, 'step_records')
-    t.timestamps(true, true, true)
+    baseWithBy(knex, t, 'step_records')
     t.string('stepId').notNullable()
     t.string('previousId')
     t.string('previousStepId')
@@ -35,8 +38,6 @@ export async function up (knex: Knex): Promise<void> {
     t.string('status').notNullable()
     t.jsonb('data').notNullable().defaultTo('{}')
     t.string('userId')
-    t.string('createdBy')
-    t.string('updatedBy')
     t.timestamp('doneAt')
     t.timestamp('hangedAt')
     t.timestamp('canceledAt')
