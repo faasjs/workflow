@@ -59,6 +59,12 @@ describe('builder', () => {
         error: { message: '找不到记录#1' },
       })
     })
+
+    it('should work with special lang', async () => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      expect(() => test(builder({ lang: LangZh })({ lang: { stepIdRequired: 'required' } }))).toThrowError('required')
+    })
   })
 
   it('should work with extends', async () => {
