@@ -11,7 +11,9 @@ import {
 } from '@faasjs/knex'
 import type { Knex as K } from 'knex'
 import { Lang, LangEn } from './lang'
-import { Status, Times } from './enum'
+import {
+  Status, Times, Bys
+} from './enum'
 import {
   buildActions, BaseActionParams, BaseActionOptions,
 } from './action'
@@ -112,7 +114,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
 
   return useFunc(function () {
     const cf = useCloudFunction()
-    const http = useHttp<BaseActionParams<Steps[TName]['data']>>({
+    const http = useHttp<BaseActionParams<Steps[TName]['data'], Steps[TName]['summary']>>({
       validator: {
         params: {
           rules: {
@@ -232,16 +234,26 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
 
               if (!record)
                 throw Error(options.lang.recordNotFound(http.params.id))
-            } else
+            } else {
               record = {
                 stepId: options.stepId,
                 summary: {},
-                createdAt: new Date()
+                createdAt: new Date(),
               }
+            }
 
-            if (http.params.userId) record.userId = http.params.userId
-            if (http.params.data) record.data = http.params.data
-            if (http.params.note) record.note = http.params.note
+            ([
+              'data',
+              'note',
+              'doneBy',
+              'hangedBy',
+              'canceledBy',
+              'lockedBy',
+              'unlockedBy',
+              'undoBy',
+            ] as (keyof StepRecord)[]).forEach((k) => {
+              if (http.params[k]) (record as any)[k] = http.params[k]
+            })
 
             if (http.params.previousId) {
               record.previousId = http.params.previousId
@@ -249,6 +261,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
               record.previousUserId = http.params.previousUserId
               record.ancestorIds = http.params.ancestorIds
             }
+
             if (http.params.unlockedAt) record.unlockedAt = new Date(http.params.unlockedAt)
 
             if (options.beforeAction)
@@ -275,6 +288,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
             record.status = Status[http.params.action as StepRecordAction]
 
             record[Times[http.params.action as StepRecordAction]] = new Date()
+            record[Bys[http.params.action as StepRecordAction]] = user ? user.id : null
 
             if (http.params.action === 'done' && record.createdAt)
               record.duration = new Date().getTime() - record.createdAt.getTime()

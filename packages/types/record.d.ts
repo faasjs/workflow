@@ -18,8 +18,6 @@ export type StepRecord<TData = any, TSummary = any> = {
 
   data: TData
 
-  userId: string
-
   createdAt: Date
   createdBy: string
 
@@ -27,11 +25,22 @@ export type StepRecord<TData = any, TSummary = any> = {
   updatedBy: string
 
   doneAt: Date
+  doneBy: string
+
   hangedAt: Date
+  hangedBy: string
+
   canceledAt: Date
+  canceledBy: string
+
   lockedAt: Date
+  lockedBy: string
+
   unlockedAt: Date
+  unlockedBy: string
+
   undoAt: Date
+  undoBy: string
 
   /** doneAt - createdAt  */
   duration: number

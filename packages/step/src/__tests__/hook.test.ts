@@ -1,7 +1,9 @@
 import { useStepRecordFunc } from '../hook'
 import { test } from '@faasjs/test'
 import { query } from '@faasjs/knex'
-import { Status, Times } from '../enum'
+import {
+  Status, Times, Bys
+} from '../enum'
 import type { StepRecordAction } from '@faasjs/workflow-types'
 
 declare module '@faasjs/workflow-types/steps' {
@@ -280,6 +282,7 @@ describe('hook', () => {
       })
 
       expect(record[Times[action]]).toBeDefined()
+      expect(record[Bys[action]]).toEqual('test')
     })
 
     it.each(actions)('%s should work with handler', async (action) => {

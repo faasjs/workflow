@@ -6,35 +6,13 @@ import type { Http } from '@faasjs/http'
 import type { BaseContext, UseStepRecordFuncOptions } from './hook'
 import type { Knex as K } from 'knex'
 
-export type BaseActionParams<T> = {
+export type BaseActionParams<TData, TSummary> = {
   action: StepRecordAction | 'new' | 'get' | 'list'
-
-  stepId: string
-
-  previousId?: string
-  previousStepId?: string
-  previousUserId?: string
-
-  ancestorIds?: string[]
-
-  userId?: string
-
-  note?: string
-
-  unlockedAt?: number
-} & ({
-  id: string
-
-  data?: T
-} | {
-  id?: string
-
-  data: T
-})
+} & Partial<StepRecord<TData, TSummary>>
 
 export type BaseActionOptions<TName extends keyof Steps, TExtend = any> = BaseContext<TName, TExtend> & {
   save: () => Promise<StepRecord>
-  createRecord(props: BaseActionParams<any>): Promise<any>
+  createRecord(props: BaseActionParams<Steps[TName]['data'], Steps[TName]['summary']>): Promise<any>
 }
 
 export function buildActions (props: {
@@ -72,7 +50,7 @@ export function buildActions (props: {
     return props.record as StepRecord
   }
 
-  async function createRecord (recordProps: BaseActionParams<any>) {
+  async function createRecord (recordProps: BaseActionParams<any, any>) {
     if (!props.record.id && !props.saved)
       await save()
     return await props.cf.invokeSync(`${props.options.basePath || 'steps'}/${recordProps.stepId}/index`, {

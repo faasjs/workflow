@@ -19,3 +19,13 @@ export const Times: Record<StepRecordAction, 'createdAt' | 'hangedAt' | 'doneAt'
   unlock: 'unlockedAt',
   undo: 'undoAt',
 }
+
+export const Bys: Record<StepRecordAction, 'createdBy' | 'hangedBy' | 'doneBy' | 'canceledBy' | 'lockedBy' | 'unlockedBy' | 'undoBy'> = {
+  draft: 'createdBy',
+  hang: 'hangedBy',
+  done: 'doneBy',
+  cancel: 'canceledBy',
+  lock: 'lockedBy',
+  unlock: 'unlockedBy',
+  undo: 'undoBy',
+}
