@@ -17,7 +17,7 @@ export type BaseActionOptions<TName extends keyof Steps, TExtend = any> = BaseCo
 
 export function buildActions (props: {
   options: UseStepRecordFuncOptions<any, any>
-  step: Step
+  step: Partial<Step>
   record: Partial<StepRecord>
   user: User
   trx: K.Transaction

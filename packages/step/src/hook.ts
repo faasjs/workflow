@@ -56,6 +56,7 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends 
     user?: User
   }) => Promise<{
     step: Partial<Step>
+    users: User[]
     record: Partial<StepRecord>
   }>
   list?: (context: {
@@ -91,6 +92,11 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends 
     http: Http
     knex: Knex
   }) => Promise<User>
+
+  getUsers?: (props: {
+    knex: Knex
+    ids: string[]
+  }) => Promise<User[]>
 
   afterMount?: () => void
   /** run before draft, done, etc. */
@@ -175,7 +181,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
             })
 
           return { step }
-        case 'get':
+        case 'get': {
           if (!http.params.id)
             throw Error(options.lang.idRequired)
 
@@ -187,10 +193,28 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
               user,
             })
 
+          const record = await knex.query('step_records').where('id', http.params.id).first()
+
+          const users = options.getUsers ? await options.getUsers({
+            knex,
+            ids: [
+              record.createdBy,
+              record.updatedBy,
+              record.hangedBy,
+              record.doneBy,
+              record.canceledBy,
+              record.lockedBy,
+              record.unlockedBy,
+              record.undoBy,
+            ].filter(Boolean),
+          }) : []
+
           return {
             step,
-            record: await knex.query('step_records').where('id', http.params.id).first()
+            users,
+            record,
           }
+        }
         case 'list': {
           options.pagination = Object.assign({
             current: 1,

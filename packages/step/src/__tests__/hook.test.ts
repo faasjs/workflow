@@ -112,6 +112,7 @@ describe('hook', () => {
       const func = test(useStepRecordFunc({
         stepId: 'basic',
         getUser: async () => Promise.resolve({ id: 'test' }),
+        getUsers: async () => Promise.resolve([{ id: 'test' }]),
       }))
 
       it('should work with record', async () => {
@@ -129,6 +130,7 @@ describe('hook', () => {
             id: 'basic',
             name: 'name',
           },
+          users: [{ id: 'test' }],
           record: {
             id: record.id,
             status: 'draft',
@@ -143,6 +145,7 @@ describe('hook', () => {
           stepId: 'basic',
           get: async () => ({
             step: { id: 'id' },
+            users: [],
             record: {
               id: 'id',
               status: 'draft',
@@ -158,6 +161,7 @@ describe('hook', () => {
           statusCode: 200,
           data: {
             step: { id: 'id' },
+            users: [],
             record: {
               id: 'id',
               status: 'draft',
