@@ -329,7 +329,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                 save: actions.save,
                 createRecord: actions.createRecord,
                 ...options.extends,
-              })
+              }) || {}
 
             if (!saved) await actions.save()
 
