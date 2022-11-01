@@ -20,7 +20,7 @@ import {
 
 export type BaseContext<TName extends keyof Steps, TExtend extends Record<string, any>> = {
   step: Step
-  record: Partial<StepRecord<Steps[TName]['data']>>
+  record: Partial<StepRecord<TName>>
   data: Steps[TName]['data']
 
   trx: K.Transaction
@@ -57,7 +57,7 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends 
   }) => Promise<{
     step: Partial<Step>
     users: User[]
-    record: Partial<StepRecord>
+    record: Partial<StepRecord<TName>>
   }>
   list?: (context: {
     stepId: TName
@@ -65,7 +65,7 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends 
     user?: User
   }) => Promise<{
     step: Partial<Step>
-    rows: Partial<StepRecord>[]
+    rows: Partial<StepRecord<TName>>[]
     pagination: ListPagination
   }>
 
@@ -120,7 +120,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
 
   return useFunc(function () {
     const cf = useCloudFunction()
-    const http = useHttp<BaseActionParams<Steps[TName]['data'], Steps[TName]['summary']>>({
+    const http = useHttp<BaseActionParams<TName>>({
       validator: {
         params: {
           rules: {
@@ -249,7 +249,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
             throw Error(options.lang.idOrDataRequired)
 
           return await knex.transaction(async trx => {
-            let record: Partial<StepRecord>
+            let record: Partial<StepRecord<TName>>
 
             const saved = false
 
@@ -275,7 +275,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
               'lockedBy',
               'unlockedBy',
               'undoBy',
-            ] as (keyof StepRecord)[]).forEach((k) => {
+            ] as (keyof StepRecord<TName>)[]).forEach((k) => {
               if (http.params[k]) (record as any)[k] = http.params[k]
             })
 

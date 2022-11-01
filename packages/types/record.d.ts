@@ -4,9 +4,9 @@ export type StepRecordAction = 'draft' | 'hang' | 'done' | 'cancel' | 'lock' | '
 
 export type StepRecordStatus = 'draft' | 'hanging' | 'locked' | 'done' | 'canceled'
 
-export type StepRecord<TData = any, TSummary = any> = {
+export type StepRecord<StepName extends keyof Steps> = {
   id: string
-  stepId: keyof Steps
+  stepId: StepName
 
   previousId: string
   previousStepId: string
@@ -16,7 +16,7 @@ export type StepRecord<TData = any, TSummary = any> = {
 
   status: StepRecordStatus
 
-  data: TData
+  data: Steps[StepName]['data']
 
   createdAt: Date
   createdBy: string
@@ -45,6 +45,6 @@ export type StepRecord<TData = any, TSummary = any> = {
   /** doneAt - createdAt  */
   duration: number
 
-  summary: TSummary
+  summary: Steps[StepName]['summary']
   note: string
 }

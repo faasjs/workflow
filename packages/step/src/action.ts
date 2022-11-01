@@ -6,19 +6,22 @@ import type { Http } from '@faasjs/http'
 import type { BaseContext, UseStepRecordFuncOptions } from './hook'
 import type { Knex as K } from 'knex'
 
-export type BaseActionParams<TData, TSummary> = {
+export type BaseActionParams<TName extends keyof Steps> = {
   action: StepRecordAction | 'new' | 'get' | 'list'
-} & Partial<StepRecord<TData, TSummary>>
+} & Partial<StepRecord<TName>>
 
 export type BaseActionOptions<TName extends keyof Steps, TExtend = any> = BaseContext<TName, TExtend> & {
-  save: () => Promise<StepRecord>
-  createRecord(props: BaseActionParams<Steps[TName]['data'], Steps[TName]['summary']>): Promise<any>
+  save: () => Promise<StepRecord<TName>>
+  createRecord<TName2 extends keyof Steps>(recordProps: {
+    stepId: TName2
+    action: StepRecordAction
+  } & Partial<StepRecord<TName2>>): Promise<any>
 }
 
-export function buildActions (props: {
+export function buildActions<TName extends keyof Steps> (props: {
   options: UseStepRecordFuncOptions<any, any>
   step: Partial<Step>
-  record: Partial<StepRecord>
+  record: Partial<StepRecord<TName>>
   user: User
   trx: K.Transaction
   saved: boolean
@@ -47,10 +50,11 @@ export function buildActions (props: {
     }
     props.saved = true
 
-    return props.record as StepRecord
+    return props.record as StepRecord<TName>
   }
 
-  async function createRecord (recordProps: BaseActionParams<any, any>) {
+  async function createRecord<TName extends keyof Steps>
+  (recordProps: BaseActionParams<TName>) {
     if (!props.record.id && !props.saved)
       await save()
     return await props.cf.invokeSync(`${props.options.basePath || 'steps'}/${recordProps.stepId}/index`, {
