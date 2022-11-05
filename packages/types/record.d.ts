@@ -16,7 +16,7 @@ export type StepRecord<StepName extends keyof Steps> = {
 
   status: StepRecordStatus
 
-  data: Steps[StepName]['data']
+  data: Partial<Steps[StepName]['data']>
 
   createdAt: Date
   createdBy: string
@@ -45,6 +45,6 @@ export type StepRecord<StepName extends keyof Steps> = {
   /** doneAt - createdAt  */
   duration: number
 
-  summary: Steps[StepName]['summary']
+  summary: Partial<Steps[StepName]['summary'] | Steps[StepName]['data']>
   note: string
 }
