@@ -17,6 +17,7 @@ import {
 import {
   buildActions, BaseActionParams, BaseActionOptions,
 } from './action'
+import { randomUUID } from 'crypto'
 
 export type BaseContext<TName extends keyof Steps, TExtend extends Record<string, any>> = {
   step: Step
@@ -97,6 +98,9 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends 
     knex: Knex
     ids: string[]
   }) => Promise<User[]>
+
+  /** uuid as default */
+  generateId?: () => Promise<string>
 
   afterMount?: () => void
   /** run before draft, done, etc. */
@@ -260,6 +264,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                 throw Error(options.lang.recordNotFound(http.params.id))
             } else {
               record = {
+                id: options.generateId ? await options.generateId() : randomUUID(),
                 stepId: options.stepId,
                 summary: {},
                 createdAt: new Date(),
