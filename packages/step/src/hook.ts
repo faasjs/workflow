@@ -266,6 +266,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
             } else {
               record = {
                 id: options.generateId ? await options.generateId() : randomUUID(),
+                ancestorIds: [],
                 stepId: options.stepId,
                 summary: {},
                 createdAt: new Date(),
