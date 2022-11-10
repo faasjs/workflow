@@ -256,6 +256,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
             let record: Partial<StepRecord<TName>>
 
             const saved = false
+            const newRecord = !http.params.id
 
             if (http.params.id) {
               record = await trx('step_records').where('id', http.params.id).first()
@@ -312,6 +313,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
               saved,
               cf,
               http,
+              newRecord,
             })
 
             record.status = Status[http.params.action as StepRecordAction]

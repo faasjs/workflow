@@ -27,6 +27,7 @@ export function buildActions<TName extends keyof Steps> (props: {
   saved: boolean
   cf: CloudFunction
   http: Http
+  newRecord: boolean
 }) {
   async function save () {
     if (props.options.summary)
@@ -42,13 +43,21 @@ export function buildActions<TName extends keyof Steps> (props: {
 
     props.record.updatedBy = props.user?.id
 
-    if (props.record.id)
-      props.record = Object.assign(props.record, await props.trx('step_records').where('id', props.record.id).update(props.record).returning('*').then(rows => rows[0]))
+    if (!props.newRecord)
+      props.record = Object.assign(props.record, await props.trx('step_records')
+        .where('id', props.record.id)
+        .update(props.record)
+        .returning('*')
+        .then(r => r[0]))
     else {
       props.record.createdBy = props.user?.id
-      props.record = Object.assign(props.record, await props.trx('step_records').insert(props.record).returning('*').then(rows => rows[0]))
+      props.record = Object.assign(props.record, await props.trx('step_records')
+        .insert(props.record)
+        .returning('*')
+        .then(r => r[0]))
     }
     props.saved = true
+    props.newRecord = false
 
     return props.record as StepRecord<TName>
   }
