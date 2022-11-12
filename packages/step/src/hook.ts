@@ -29,6 +29,8 @@ export type BaseContext<TName extends keyof Steps, TExtend extends Record<string
   trx: K.Transaction
 
   user?: User
+
+  lang: Lang
 } & TExtend
 
 export type ListPagination = {
@@ -306,6 +308,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                 data: record.data,
                 trx,
                 user,
+                lang: options.lang as Lang,
                 ...options.extends,
               })
 
@@ -331,11 +334,56 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
 
             let result: Record<string, any> = {}
 
+            if (http.params.action === 'undo') {
+              const nextRecord = await trx('step_records')
+                .where('previousId', record.id)
+                .select('id', 'stepId', 'status')
+                .first()
+
+              if (nextRecord?.status === 'done')
+                throw Error(options.lang.undoFailed)
+
+              if (nextRecord)
+                await actions.updateRecord({
+                  stepId: nextRecord.stepId,
+                  id: nextRecord.id,
+                  action: 'cancel',
+                  note: options.lang.undoNote(record.id),
+                })
+
+              record.status = 'draft'
+              record.undoAt = new Date()
+              record.undoBy = user.id
+
+              if (options.undo)
+                result = await options.undo({
+                  action: http.params.action as StepRecordAction,
+                  step,
+                  user,
+                  lang: options.lang as Lang,
+                  record,
+                  id: record.id,
+                  data: record.data,
+                  trx,
+                  ...actions,
+                  ...options.extends,
+                }) || {}
+
+              if (!saved) await actions.save()
+
+              return {
+                ...(result || {}),
+                id: record.id,
+                message: options.lang.undoSuccess,
+              }
+            }
+
             if (options[http.params.action as StepRecordAction])
               result = await options[http.params.action as StepRecordAction]({
                 action: http.params.action as StepRecordAction,
                 step,
                 user,
+                lang: options.lang as Lang,
                 record,
                 id: record.id,
                 data: record.data,

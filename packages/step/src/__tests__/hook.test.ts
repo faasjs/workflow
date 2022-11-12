@@ -299,7 +299,7 @@ describe('hook', () => {
           data.productName = 'test'
 
           return { productName: data.productName, }
-        }
+        },
       }))
 
       const { data } = await func.JSONhandler({
@@ -334,7 +334,7 @@ describe('hook', () => {
 
           return { productName: data[key], }
         },
-        extends: { key: 'productName' }
+        extends: { key: 'productName' },
       }))
 
       const { data } = await func.JSONhandler({

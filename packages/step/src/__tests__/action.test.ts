@@ -33,6 +33,7 @@ describe('action', () => {
           id: 'id',
           ancestorIds: [],
         },
+        newRecord: false,
         user: { id: 'test' },
         trx,
         saved: false,
