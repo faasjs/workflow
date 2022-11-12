@@ -337,8 +337,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                 id: record.id,
                 data: record.data,
                 trx,
-                save: actions.save,
-                createRecord: actions.createRecord,
+                ...actions,
                 ...options.extends,
               }) || {}
 

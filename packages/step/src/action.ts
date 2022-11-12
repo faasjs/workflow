@@ -16,6 +16,11 @@ export type BaseActionOptions<TName extends keyof Steps, TExtend = any> = BaseCo
     stepId: TName2
     action: StepRecordAction
   } & Partial<StepRecord<TName2>>): Promise<any>
+  updateRecord<TName3 extends keyof Steps>(recordProps: {
+    stepId: TName3
+    action: StepRecordAction
+    id: string
+  } & Partial<StepRecord<TName3>>): Promise<any>
 }
 
 export function buildActions<TName extends keyof Steps> (props: {
@@ -84,8 +89,29 @@ export function buildActions<TName extends keyof Steps> (props: {
     })
   }
 
+  async function updateRecord<TName extends keyof Steps>
+  (recordProps: BaseActionParams<TName>) {
+    return await props.cf.invokeSync(`${props.options.basePath || 'steps'}/${recordProps.stepId}/index`, {
+      headers: { cookie: props.http.session.config.key + '=' + props.http.session.encode(JSON.stringify({ aid: props.user?.id })) },
+      body: {
+        ...recordProps,
+        previousId: props.record.id,
+        previousStepId: props.options.stepId,
+        previousUserId: props.user?.id,
+        ancestorIds: props.record.ancestorIds.concat(props.record.id)
+      },
+    }).then(res => {
+      if (res.originBody) {
+        const body = JSON.parse(res.originBody)
+        return body.error ? Promise.reject(Error(body.error.message)) : body.data
+      }
+      return Promise.reject(res.body || res.statusCode)
+    })
+  }
+
   return {
     save,
-    createRecord
+    createRecord,
+    updateRecord,
   }
 }
