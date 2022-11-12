@@ -22,6 +22,7 @@ import { randomUUID } from 'crypto'
 export type BaseContext<TName extends keyof Steps, TExtend extends Record<string, any>> = {
   step: Step
   id: string
+  action: StepRecordAction
   record: Partial<StepRecord<TName>>
   data: Steps[TName]['data']
 
@@ -298,6 +299,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
 
             if (options.beforeAction)
               await options.beforeAction({
+                action: http.params.action as StepRecordAction,
                 step,
                 record,
                 id: record.id,
@@ -331,6 +333,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
 
             if (options[http.params.action as StepRecordAction])
               result = await options[http.params.action as StepRecordAction]({
+                action: http.params.action as StepRecordAction,
                 step,
                 user,
                 record,
