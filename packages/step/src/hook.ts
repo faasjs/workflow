@@ -123,9 +123,6 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
 
   if (!options.stepId) throw Error(options.lang.stepIdRequired)
 
-  if (options.afterMount)
-    options.afterMount()
-
   return useFunc(function () {
     const cf = useCloudFunction()
     const http = useHttp<BaseActionParams<TName>>({
@@ -170,6 +167,9 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
     })
     const knex = useKnex()
     let step: Step
+
+    if (options.afterMount)
+      options.afterMount()
 
     return async function () {
       if (!step) step = await query('steps').where('id', options.stepId).first()
