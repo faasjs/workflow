@@ -20,7 +20,7 @@ import {
 import { randomUUID } from 'crypto'
 
 export type BaseContext<TName extends keyof Steps, TExtend extends Record<string, any>> = {
-  step: Step
+  step: Partial<Step>
   id: string
   action: StepRecordAction
   record: Partial<StepRecord<TName>>
@@ -31,7 +31,7 @@ export type BaseContext<TName extends keyof Steps, TExtend extends Record<string
   user?: User
 
   lang: Lang
-} & TExtend
+} & Partial<TExtend>
 
 export type ListPagination = {
   current: number
@@ -81,7 +81,7 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends 
   }
 
   /** use data as summary as default */
-  summary?: (context: BaseContext<TName, TExtend>) => Promise<Steps[TName]['summary']>
+  summary?: (context: Omit<BaseContext<TName, TExtend>, 'action' | 'lang'>) => Promise<Steps[TName]['summary']>
 
   draft?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['draft']>
   hang?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['hang']>
@@ -110,7 +110,7 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends 
   /** run before draft, done, etc. */
   beforeAction?: (context: BaseContext<TName, TExtend>) => Promise<void>
 
-  extends?: TExtend
+  extends?: Partial<TExtend>
 }
 
 export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Record<string, any>> (

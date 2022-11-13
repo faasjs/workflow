@@ -40,6 +40,7 @@ export function buildActions<TName extends keyof Steps> (props: {
         step: props.step,
         user: props.user,
         record: props.record,
+        id: props.record.id,
         data: props.record.data,
         trx: props.trx,
       })
