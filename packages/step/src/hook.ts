@@ -110,7 +110,7 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends 
   /** run before draft, done, etc. */
   beforeAction?: (context: BaseContext<TName, TExtend>) => Promise<void>
 
-  extends?: Partial<TExtend>
+  extends?: Partial<TExtend> | (() => Partial<TExtend>)
 }
 
 export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Record<string, any>> (
@@ -299,6 +299,8 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
 
             if (http.params.unlockedAt) record.unlockedAt = new Date(http.params.unlockedAt)
 
+            const extend: Partial<TExtend> = options.extends ? (typeof options.extends === 'function' ? await options.extends() : options.extends) : {}
+
             if (options.beforeAction)
               await options.beforeAction({
                 action: http.params.action as StepRecordAction,
@@ -309,7 +311,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                 trx,
                 user,
                 lang: options.lang as Lang,
-                ...options.extends,
+                ...extend,
               })
 
             const actions = buildActions({
@@ -366,7 +368,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                   data: record.data,
                   trx,
                   ...actions,
-                  ...options.extends,
+                  ...extend,
                 }) || {}
 
               if (!saved) await actions.save()
@@ -389,7 +391,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                 data: record.data,
                 trx,
                 ...actions,
-                ...options.extends,
+                ...extend,
               }) || {}
 
             if (!saved) await actions.save()
