@@ -337,15 +337,14 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
             let result: Record<string, any> = {}
 
             if (http.params.action === 'undo') {
-              const nextRecord = await trx('step_records')
+              const nextRecords = await trx('step_records')
                 .where('previousId', record.id)
                 .select('id', 'stepId', 'status')
-                .first()
 
-              if (nextRecord?.status === 'done')
+              if (nextRecords.find(r => r.status === 'done'))
                 throw Error(options.lang.undoFailed)
 
-              if (nextRecord)
+              for (const nextRecord of nextRecords)
                 await actions.updateRecord({
                   stepId: nextRecord.stepId,
                   id: nextRecord.id,
