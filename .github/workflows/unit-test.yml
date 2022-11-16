@@ -38,7 +38,7 @@ jobs:
       - name: Run Tests
         run: npm run ci
         env:
-          SECRET_KNEX_CONNECTION: postgresql://postgres:postgres@localhost:5432/postgres
+          KNEX_CONNECTION_BASE: postgresql://postgres:postgres@localhost:5432
       - uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOVTOKEN }}

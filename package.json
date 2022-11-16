@@ -7,7 +7,7 @@
   "scripts": {
     "lint": "eslint .",
     "test": "jest -w=1 --forceExit",
-    "ci": "jest --silent --coverage --forceExit -w=1",
+    "ci": "jest --silent --coverage --forceExit",
     "build": "npm run build --workspaces --if-present && npm run build:types --workspaces --if-present",
     "publish:devel": "node devel.cjs"
   },

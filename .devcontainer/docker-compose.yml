@@ -14,7 +14,7 @@ services:
       - ~/.ssh:/root/.ssh:delegated
     depends_on:
       - pg_development
-      - pg_testing1
+      - pg_testing
   nginx:
     image: faasjs/nginx
     command: nginx -g "daemon off;"
@@ -30,7 +30,7 @@ services:
       POSTGRES_DB: development
       POSTGRES_USER: development
       POSTGRES_HOST_AUTH_METHOD: trust
-  pg_testing1:
+  pg_testing:
     image: postgres:alpine
     environment:
       POSTGRES_DB: testing
