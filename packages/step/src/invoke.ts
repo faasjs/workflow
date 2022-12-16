@@ -14,6 +14,7 @@ export type InvokeStepOptions<TName extends keyof Steps, TExtend extends Record<
     ancestorIds: string[]
     user?: User
   }
+  user?: User
   /**
    * Request with session data
    * @default {}
@@ -42,20 +43,28 @@ export type InvokeStepOptions<TName extends keyof Steps, TExtend extends Record<
  * })
  * ```
  */
-export async function invokeStep<TName extends keyof Steps, TExtend extends Record<string, any>> (props: InvokeStepOptions<TName, TExtend>) {
-  if (!props.http) props.http = await useHttp().mount()
+export async function invokeStep<TName extends keyof Steps, TExtend extends Record<string, any>> (
+  props: InvokeStepOptions<TName, TExtend>
+) {
   if (!props.cf) props.cf = await useCloudFunction().mount()
+  if (!props.http) props.http = await useHttp().mount()
+
+  const body: Record<string, any> = {
+    action: props.action,
+    ...props.record,
+  }
+
+  if (props.previous) {
+    body.previousId = props.previous.id
+    body.previousStepId = props.previous.stepId
+    body.previousUserId = props.previous.user?.id
+    body.ancestorIds = props.previous.ancestorIds.includes(props.previous.id) ?
+      props.previous.ancestorIds : props.previous.ancestorIds.concat(props.previous.id).filter(Boolean)
+  }
 
   return await props.cf.invokeSync(`${props.basePath || 'steps'}/${props.stepId}/index`, {
     headers: { cookie: props.http.session.config.key + '=' + props.http.session.encode(JSON.stringify(props.session || {})) },
-    body: {
-      action: props.action,
-      ...props.record,
-      previousId: props.previous?.id,
-      previousStepId: props.previous?.stepId,
-      previousUserId: props.previous?.user?.id,
-      ancestorIds: props.previous?.ancestorIds.concat(props.previous.id).filter(Boolean) || []
-    },
+    body,
   }).then(res => {
     if (res.originBody) {
       const body = JSON.parse(res.originBody)

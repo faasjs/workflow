@@ -18,6 +18,7 @@ import {
   buildActions, BaseActionParams, BaseActionOptions,
 } from './action'
 import { randomUUID } from 'crypto'
+import { BuildInvokeOptions } from './builder'
 
 export type BaseContext<TName extends keyof Steps, TExtend extends Record<string, any>> = {
   step: Partial<Step>
@@ -43,7 +44,7 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends 
   stepId: TName
 
   /**
-   * `steps` as default
+   * @default 'steps'
    */
   basePath?: string
 
@@ -111,6 +112,8 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends 
   beforeAction?: (context: BaseContext<TName, TExtend>) => Promise<void>
 
   extends?: Partial<TExtend> | (() => Partial<TExtend>)
+
+  buildInvokeOptions?: BuildInvokeOptions<TExtend>
 }
 
 export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Record<string, any>> (
@@ -324,6 +327,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
               cf,
               http,
               newRecord,
+              buildInvokeOptions: options.buildInvokeOptions,
             })
 
             record.status = Status[http.params.action as StepRecordAction]

@@ -5,6 +5,7 @@ import { CloudFunction } from '@faasjs/cloud_function'
 import { Http } from '@faasjs/http'
 import type { BaseContext, UseStepRecordFuncOptions } from './hook'
 import type { Knex as K } from 'knex'
+import { buildInvoke, BuildInvokeOptions } from './builder'
 
 export type BaseActionParams<TName extends keyof Steps> = {
   action: StepRecordAction | 'new' | 'get' | 'list'
@@ -33,6 +34,7 @@ export function buildActions<TName extends keyof Steps> (props: {
   cf: CloudFunction
   http: Http
   newRecord: boolean
+  buildInvokeOptions?: BuildInvokeOptions<any>
 }) {
   async function save () {
     if (props.options.summary)
@@ -68,45 +70,41 @@ export function buildActions<TName extends keyof Steps> (props: {
     return props.record as StepRecord<TName>
   }
 
+  const invoke = buildInvoke({
+    basePath: props.options.basePath,
+    cf: props.cf,
+    http: props.http,
+    ...props.buildInvokeOptions || {},
+  })
+
+  const previous = {
+    id: props.record.id,
+    stepId: props.options.stepId,
+    user: props.user,
+    ancestorIds: [...props.record.ancestorIds, props.record.id],
+  }
+
   async function createRecord<TName extends keyof Steps>
   (recordProps: BaseActionParams<TName>) {
     if (!props.record.id && !props.saved)
       await save()
-    return await props.cf.invokeSync(`${props.options.basePath || 'steps'}/${recordProps.stepId}/index`, {
-      headers: { cookie: props.http.session.config.key + '=' + props.http.session.encode(JSON.stringify({ aid: props.user?.id })) },
-      body: {
-        ...recordProps,
-        previousId: props.record.id,
-        previousStepId: props.options.stepId,
-        previousUserId: props.user?.id,
-        ancestorIds: props.record.ancestorIds.concat(props.record.id)
-      },
-    }).then(res => {
-      if (res.originBody) {
-        const body = JSON.parse(res.originBody)
-        return body.error ? Promise.reject(Error(body.error.message)) : body.data
-      }
-      return Promise.reject(res.body || res.statusCode)
+    return await invoke({
+      stepId: recordProps.stepId,
+      action: recordProps.action,
+      record: recordProps,
+      previous,
+      user: props.user,
     })
   }
 
   async function updateRecord<TName extends keyof Steps>
   (recordProps: BaseActionParams<TName>) {
-    return await props.cf.invokeSync(`${props.options.basePath || 'steps'}/${recordProps.stepId}/index`, {
-      headers: { cookie: props.http.session.config.key + '=' + props.http.session.encode(JSON.stringify({ aid: props.user?.id })) },
-      body: {
-        ...recordProps,
-        previousId: props.record.id,
-        previousStepId: props.options.stepId,
-        previousUserId: props.user?.id,
-        ancestorIds: props.record.ancestorIds.concat(props.record.id)
-      },
-    }).then(res => {
-      if (res.originBody) {
-        const body = JSON.parse(res.originBody)
-        return body.error ? Promise.reject(Error(body.error.message)) : body.data
-      }
-      return Promise.reject(res.body || res.statusCode)
+    return await invoke({
+      stepId: recordProps.stepId,
+      action: recordProps.action,
+      record: recordProps,
+      previous,
+      user: props.user,
     })
   }
 

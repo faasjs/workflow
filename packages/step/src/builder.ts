@@ -36,6 +36,10 @@ export function buildHook<TExtend extends Record<string, any>> (
   }
 }
 
+export type BuildInvokeOptions<TExtend extends Record<string, any>> = Partial<Pick<InvokeStepOptions<any, TExtend>, 'basePath' | 'cf' | 'http'>> & {
+  beforeInvoke?: (options: InvokeStepOptions<any, TExtend>) => Promise<void>
+}
+
 /**
  * Generate a custom step invoker
  *
@@ -59,9 +63,7 @@ export function buildHook<TExtend extends Record<string, any>> (
  * })
  * ```
  */
-export function buildInvoke<TExtend extends Record<string, any>> (options: Partial<Pick<InvokeStepOptions<any, TExtend>, 'basePath' | 'cf' | 'http'>> & {
-  beforeInvoke?: (options: InvokeStepOptions<any, TExtend>) => Promise<void>
-}) {
+export function buildInvoke<TExtend extends Record<string, any>> (options: BuildInvokeOptions<TExtend>) {
   return async <TName extends keyof Steps>(props: InvokeStepOptions<TName, TExtend>) => {
     if (options.beforeInvoke) await options.beforeInvoke(props)
 

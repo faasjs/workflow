@@ -1,27 +1,30 @@
-import { CloudFunction } from '@faasjs/cloud_function'
-import { Http } from '@faasjs/http'
-import { transaction } from '@faasjs/knex'
+import { useCloudFunction } from '@faasjs/cloud_function'
+import { useHttp } from '@faasjs/http'
+import { query, transaction } from '@faasjs/knex'
 import { buildActions } from '../action'
 
 describe('action', () => {
   it('should work', async () => {
-    const cf = new CloudFunction()
-    const http = new Http()
+    const cf = useCloudFunction()
+    const http = await useHttp().mount()
 
-    cf.invokeSync = async function invokeSync (name: string, data: any): Promise<any> {
-      return Promise.resolve({
-        originBody: JSON.stringify({
-          data: {
-            name,
-            data
-          }
-        })
-      })
-    }
+    // cf.invokeSync = async function invokeSync (name: string, data: any): Promise<any> {
+    //   return Promise.resolve({
+    //     originBody: JSON.stringify({
+    //       data: {
+    //         name,
+    //         data
+    //       }
+    //     })
+    //   })
+    // }
 
     await transaction(async trx => {
       const actions = buildActions({
-        options: { stepId: 'basic', },
+        options: {
+          stepId: 'basic',
+          basePath: __dirname,
+        },
         step: {
           id: 'basic',
           name: 'basic',
@@ -39,6 +42,11 @@ describe('action', () => {
         saved: false,
         cf,
         http,
+        buildInvokeOptions: {
+          async beforeInvoke (props) {
+            props.session = { uid: props.user.id }
+          }
+        }
       })
 
       expect(actions).toMatchObject({
@@ -61,8 +69,10 @@ describe('action', () => {
         data: {},
       })
 
-      expect(result.data.body).toEqual({
-        action: 'draft',
+      const record = await query('step_records').where('id', result.id).first()
+
+      expect(record).toMatchObject({
+        status: 'draft',
         data: {},
         ancestorIds: ['id'],
         previousId: 'id',
