@@ -1,8 +1,8 @@
 import type {
   StepRecord, Step, User, StepRecordAction, Steps
 } from '@faasjs/workflow-types'
-import type { CloudFunction } from '@faasjs/cloud_function'
-import type { Http } from '@faasjs/http'
+import { CloudFunction } from '@faasjs/cloud_function'
+import { Http } from '@faasjs/http'
 import type { BaseContext, UseStepRecordFuncOptions } from './hook'
 import type { Knex as K } from 'knex'
 

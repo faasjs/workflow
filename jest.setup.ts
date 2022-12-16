@@ -1,5 +1,6 @@
 import { useKnex } from '@faasjs/knex'
 import Knex from 'knex'
+import { randomBytes } from 'crypto'
 import { up } from './packages/step/src/migrate'
 
 if (typeof window !== 'undefined') {
@@ -33,6 +34,9 @@ if (typeof window !== 'undefined') {
 
     if (!process.env.SECRET_KNEX_CONNECTION)
       process.env.SECRET_KNEX_CONNECTION = process.env.KNEX_CONNECTION_BASE + '/' + db
+
+    if (!process.env.SECRET_HTTP_COOKIE_SESSION_SECRET)
+      process.env.SECRET_HTTP_COOKIE_SESSION_SECRET = randomBytes(32).toString('hex')
 
     const base = Knex({
       client: 'pg',
