@@ -348,13 +348,15 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
               if (nextRecords.find(r => r.status === 'done'))
                 throw Error(options.lang.undoFailed)
 
-              for (const nextRecord of nextRecords)
-                await actions.updateRecord({
-                  stepId: nextRecord.stepId,
-                  id: nextRecord.id,
-                  action: 'cancel',
-                  note: options.lang.undoNote(record.id),
-                })
+              for (const nextRecord of nextRecords) {
+                if (nextRecord.status !== 'canceled')
+                  await actions.updateRecord({
+                    stepId: nextRecord.stepId,
+                    id: nextRecord.id,
+                    action: 'cancel',
+                    note: options.lang.undoNote(record.id),
+                  })
+              }
 
               record.status = 'draft'
               record.undoAt = new Date()
