@@ -26,11 +26,9 @@ export type BaseContext<TName extends keyof Steps, TExtend extends Record<string
   action: StepRecordAction
   record: Partial<StepRecord<TName>>
   data: Steps[TName]['data']
-
+  note?: string
   trx: K.Transaction
-
   user?: User
-
   lang: Lang
 } & Partial<TExtend>
 
@@ -371,6 +369,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                   record,
                   id: record.id,
                   data: record.data,
+                  note: record.note,
                   trx,
                   ...actions,
                   ...extend,
@@ -394,6 +393,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                 record,
                 id: record.id,
                 data: record.data,
+                note: record.note,
                 trx,
                 ...actions,
                 ...extend,
