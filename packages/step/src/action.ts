@@ -13,7 +13,7 @@ export type BaseActionParams<TName extends keyof Steps> = {
 
 export type BaseActionOptions<TName extends keyof Steps, TExtend = any> = BaseContext<TName, TExtend> & {
   save: () => Promise<StepRecord<TName>>
-  cancel: (note: string) => void
+  cancel: (note: string) => Partial<StepRecord<TName>>
   createRecord<TName2 extends keyof Steps>(recordProps: {
     stepId: TName2
     action: StepRecordAction
@@ -76,6 +76,8 @@ export function buildActions<TName extends keyof Steps> (props: {
     props.record.note = note
     props.record.canceledAt = new Date()
     props.record.canceledBy = props.user?.id
+
+    return props.record
   }
 
   const invoke = buildInvoke({

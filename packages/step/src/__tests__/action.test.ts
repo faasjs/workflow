@@ -8,17 +8,6 @@ describe('action', () => {
     const cf = useCloudFunction()
     const http = await useHttp().mount()
 
-    // cf.invokeSync = async function invokeSync (name: string, data: any): Promise<any> {
-    //   return Promise.resolve({
-    //     originBody: JSON.stringify({
-    //       data: {
-    //         name,
-    //         data
-    //       }
-    //     })
-    //   })
-    // }
-
     await transaction(async trx => {
       const actions = buildActions({
         options: {
@@ -50,7 +39,9 @@ describe('action', () => {
       })
 
       expect(actions).toMatchObject({
+        cancel: expect.any(Function),
         save: expect.any(Function),
+        updateRecord: expect.any(Function),
         createRecord: expect.any(Function),
       })
 
@@ -79,6 +70,15 @@ describe('action', () => {
         previousStepId: 'basic',
         previousUserId: 'test',
         stepId: 'basic',
+      })
+
+      const cancel = actions.cancel('note')
+
+      expect(cancel).toMatchObject({
+        status: 'canceled',
+        note: 'note',
+        canceledAt: expect.any(Date),
+        canceledBy: 'test',
       })
     })
   })
