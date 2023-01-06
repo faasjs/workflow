@@ -1,8 +1,8 @@
 import type {
   StepRecord, Step, User, StepRecordAction, Steps
 } from '@faasjs/workflow-types'
-import { CloudFunction } from '@faasjs/cloud_function'
-import { Http } from '@faasjs/http'
+import type { CloudFunction } from '@faasjs/cloud_function'
+import type { Http } from '@faasjs/http'
 import type { BaseContext, UseStepRecordFuncOptions } from './hook'
 import type { Knex as K } from 'knex'
 import { buildInvoke, BuildInvokeOptions } from './builder'
@@ -13,6 +13,7 @@ export type BaseActionParams<TName extends keyof Steps> = {
 
 export type BaseActionOptions<TName extends keyof Steps, TExtend = any> = BaseContext<TName, TExtend> & {
   save: () => Promise<StepRecord<TName>>
+  cancel: (note: string) => void
   createRecord<TName2 extends keyof Steps>(recordProps: {
     stepId: TName2
     action: StepRecordAction
@@ -70,6 +71,13 @@ export function buildActions<TName extends keyof Steps> (props: {
     return props.record as StepRecord<TName>
   }
 
+  function cancel (note: string) {
+    props.record.status = 'canceled'
+    props.record.note = note
+    props.record.canceledAt = new Date()
+    props.record.canceledBy = props.user?.id
+  }
+
   const invoke = buildInvoke({
     basePath: props.options.basePath,
     cf: props.cf,
@@ -112,5 +120,6 @@ export function buildActions<TName extends keyof Steps> (props: {
     save,
     createRecord,
     updateRecord,
+    cancel,
   }
 }
