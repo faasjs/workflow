@@ -109,7 +109,8 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends 
   /** run before draft, done, etc. */
   beforeAction?: (context: BaseContext<TName, TExtend>) => Promise<Partial<TExtend>>
 
-  extends?: Partial<TExtend> | (() => Partial<TExtend>)
+  /** extend context */
+  extends?: Partial<TExtend>
 
   buildInvokeOptions?: BuildInvokeOptions<TExtend>
 }
