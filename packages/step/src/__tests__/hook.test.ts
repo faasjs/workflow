@@ -389,5 +389,24 @@ describe('hook', () => {
       expect(record.undoAt).toBeDefined()
       expect(record.undoBy).toEqual('test')
     })
+
+    it('beforeAction', async () => {
+      const func = test(useStepRecordFunc<'basic', { extend: string }>({
+        stepId: 'basic',
+        getUser: async () => Promise.resolve({ id: 'test' }),
+        beforeAction: async () => ({ extend: 'extend' }),
+        draft: async ({ extend }) => {
+          return { productName: extend }
+        },
+        extends: { extend: 'test' },
+      }))
+
+      const { data } = await func.JSONhandler({
+        action: 'draft',
+        data: {},
+      })
+
+      expect(data).toMatchObject({ productName: 'extend' })
+    })
   })
 })
