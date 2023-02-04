@@ -19,6 +19,7 @@ import {
 } from './action'
 import { randomUUID } from 'crypto'
 import { BuildInvokeOptions } from './builder'
+import { deepMerge } from '@faasjs/deep_merge'
 
 export type BaseContext<TName extends keyof Steps, TExtend extends Record<string, any>> = {
   step: Partial<Step>
@@ -275,12 +276,12 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                 ancestorIds: [],
                 stepId: options.stepId,
                 summary: {},
+                data: {},
                 createdAt: new Date(),
               }
             }
 
             ([
-              'data',
               'note',
               'doneBy',
               'hangedBy',
@@ -291,6 +292,9 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
             ] as (keyof StepRecord<TName>)[]).forEach((k) => {
               if (http.params[k]) (record as any)[k] = http.params[k]
             })
+
+            if (http.params.data)
+              record.data = deepMerge(record.data, http.params.data)
 
             if (http.params.previousId) {
               record.previousId = http.params.previousId
