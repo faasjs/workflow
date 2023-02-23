@@ -466,7 +466,8 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                     trx,
                     ...actions,
                     ...extend,
-                  })
+                  }) || {}
+                break
             }
 
             if (!saved) await actions.save()
