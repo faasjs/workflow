@@ -1,8 +1,8 @@
 import type { Steps } from './steps'
 
-export type StepRecordAction = 'draft' | 'hang' | 'done' | 'cancel' | 'lock' | 'unlock' | 'undo'
+export type StepRecordAction = 'draft' | 'hang' | 'done' | 'cancel' | 'lock' | 'unlock' | 'undo' | 'reject'
 
-export type StepRecordStatus = 'draft' | 'hanging' | 'locked' | 'done' | 'canceled'
+export type StepRecordStatus = 'draft' | 'hanging' | 'locked' | 'done' | 'canceled' | 'rejected'
 
 export type StepRecord<StepName extends keyof Steps> = {
   id: string
@@ -41,6 +41,9 @@ export type StepRecord<StepName extends keyof Steps> = {
 
   undoAt: Date
   undoBy: string
+
+  rejectedAt: Date
+  rejectedBy: string
 
   /** doneAt - createdAt  */
   duration: number

@@ -390,6 +390,40 @@ describe('hook', () => {
       expect(record.undoBy).toEqual('test')
     })
 
+    it('reject', async () => {
+      const func = test(useStepRecordFunc({
+        stepId: 'basic',
+        getUser: async () => Promise.resolve({ id: 'test' }),
+        summary: async ({ data }) => ({ name: `${data.productName}` })
+      }))
+
+      await query('step_records').insert({
+        id: 'id',
+        stepId: 'basic',
+        status: 'done',
+      })
+
+      expect(await func.JSONhandler({
+        action: 'reject',
+        note: 'note',
+        previousId: 'id',
+        data: {},
+      })).toMatchObject({
+        statusCode: 200,
+        data: {}
+      })
+
+      const records = await query('step_records').orderBy('createdAt', 'asc')
+
+      expect(records[0]).toMatchObject({
+        id: 'id',
+        status: 'draft',
+      })
+
+      expect(records[1].rejectedAt).toBeDefined()
+      expect(records[1].rejectedBy).toEqual('test')
+    })
+
     it('beforeAction', async () => {
       const func = test(useStepRecordFunc<'basic', { extend: string }>({
         stepId: 'basic',

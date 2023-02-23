@@ -9,6 +9,7 @@ export const LangEn = {
   undoSuccess: 'Undo record.',
   undoFailed: 'Undo failed, next record has be done.',
   locked: (key: string) => `Concurrent locked by key: ${key}.`,
+  rejectSuccess: 'Rejected.',
 }
 
 export const LangZh = {
@@ -22,6 +23,7 @@ export const LangZh = {
   undoSuccess: '已撤回工单',
   undoFailed: '撤回工单失败，下游工单已完成',
   locked: (key: string) => `工单并发已锁定#${key}`,
+  rejectSuccess: '驳回成功',
 }
 
 export type Lang = typeof LangEn

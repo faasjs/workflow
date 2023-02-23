@@ -93,6 +93,7 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends 
   lock?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['lock']>
   unlock?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['unlock']>
   undo?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['undo']>
+  reject?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['reject']>
 
   lang?: Partial<Lang>
 
@@ -156,6 +157,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                 'lock',
                 'unlock',
                 'undo',
+                'reject',
               ]
             }
           },
@@ -377,65 +379,95 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
 
             let result: Record<string, any> = {}
 
-            if (http.params.action === 'undo') {
-              const nextRecords = await trx('step_records')
-                .where('previousId', record.id)
-                .select('id', 'stepId', 'status')
+            switch (http.params.action) {
+              case 'undo': {
+                const nextRecords = await trx('step_records')
+                  .where('previousId', record.id)
+                  .select('id', 'stepId', 'status')
 
-              if (nextRecords.find(r => r.status === 'done'))
-                throw Error(options.lang.undoFailed)
+                if (nextRecords.find(r => r.status === 'done'))
+                  throw Error(options.lang.undoFailed)
 
-              for (const nextRecord of nextRecords)
-                if (nextRecord.status !== 'canceled')
-                  await actions.updateRecord({
-                    stepId: nextRecord.stepId,
-                    id: nextRecord.id,
-                    action: 'cancel',
-                    note: options.lang.undoNote(record.id),
-                  })
+                for (const nextRecord of nextRecords)
+                  if (nextRecord.status !== 'canceled')
+                    await actions.updateRecord({
+                      stepId: nextRecord.stepId,
+                      id: nextRecord.id,
+                      action: 'cancel',
+                      note: options.lang.undoNote(record.id),
+                    })
 
-              record.status = 'draft'
-              record.undoAt = new Date()
-              record.undoBy = user.id
+                if (options.undo)
+                  result = await options.undo({
+                    action: http.params.action as StepRecordAction,
+                    step,
+                    user,
+                    lang: options.lang as Lang,
+                    record,
+                    id: record.id,
+                    data: record.data,
+                    note: record.note,
+                    trx,
+                    ...actions,
+                    ...extend,
+                  }) || {}
 
-              if (options.undo)
-                result = await options.undo({
-                  action: http.params.action as StepRecordAction,
-                  step,
-                  user,
-                  lang: options.lang as Lang,
-                  record,
+                if (!saved) await actions.save()
+
+                return {
+                  ...(result || {}),
                   id: record.id,
-                  data: record.data,
-                  note: record.note,
-                  trx,
-                  ...actions,
-                  ...extend,
-                }) || {}
-
-              if (!saved) await actions.save()
-
-              return {
-                ...(result || {}),
-                id: record.id,
-                message: options.lang.undoSuccess,
+                  message: options.lang.undoSuccess,
+                }
               }
-            }
+              case 'reject': {
+                if (record.previousId)
+                  await trx('step_records')
+                    .where('id', record.previousId)
+                    .update({
+                      status: 'draft',
+                      note: record.note,
+                    })
 
-            if (options[http.params.action as StepRecordAction])
-              result = await options[http.params.action as StepRecordAction]({
-                action: http.params.action as StepRecordAction,
-                step,
-                user,
-                lang: options.lang as Lang,
-                record,
-                id: record.id,
-                data: record.data,
-                note: record.note,
-                trx,
-                ...actions,
-                ...extend,
-              }) || {}
+                if (options.reject)
+                  result = await options.reject({
+                    action: http.params.action as StepRecordAction,
+                    step,
+                    user,
+                    lang: options.lang as Lang,
+                    record,
+                    id: record.id,
+                    data: record.data,
+                    note: record.note,
+                    trx,
+                    ...actions,
+                    ...extend,
+                  }) || {}
+
+                if (!saved) await actions.save()
+
+                return {
+                  ...(result || {}),
+                  id: record.id,
+                  message: options.lang.rejectSuccess,
+                }
+              }
+              default:
+                if (options[http.params.action as StepRecordAction])
+                  result = await options[http.params.action as StepRecordAction]({
+                    action: http.params.action as StepRecordAction,
+                    step,
+                    user,
+                    lang: options.lang as Lang,
+                    record,
+                    id: record.id,
+                    data: record.data,
+                    note: record.note,
+                    trx,
+                    ...actions,
+                    ...extend,
+                  })
+            }
 
             if (!saved) await actions.save()
 

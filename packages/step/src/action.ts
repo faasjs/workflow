@@ -91,7 +91,7 @@ export function buildActions<TName extends keyof Steps> (props: {
     id: props.record.id,
     stepId: props.options.stepId,
     user: props.user,
-    ancestorIds: [...props.record.ancestorIds, props.record.id],
+    ancestorIds: [...(props.record.ancestorIds || []), props.record.id].filter(Boolean),
   }
 
   async function createRecord<TName extends keyof Steps>

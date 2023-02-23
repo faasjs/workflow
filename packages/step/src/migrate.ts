@@ -49,6 +49,8 @@ export async function up (knex: Knex): Promise<void> {
     t.string('unlockedBy')
     t.timestamp('undoAt')
     t.string('undoBy')
+    t.timestamp('rejectedAt')
+    t.string('rejectedBy')
     t.integer('duration').notNullable().defaultTo(0)
     t.jsonb('summary').notNullable().defaultTo('{}')
     t.string('note')
