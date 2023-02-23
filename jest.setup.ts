@@ -83,6 +83,7 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
   global.afterAll(async () => {
     await useKnex().quit()
+    await useRedis().quit()
   })
 
   global.beforeEach(async () => {
