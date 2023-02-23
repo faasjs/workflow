@@ -13,6 +13,11 @@ A Process Driven System base on FaasJS.
 - [x] Built with TypeScript and FaasJS.
 - [x] Easy to use and test.
 
+## Dependencies
+
+- Postgresql
+- Redis
+
 ## Documentation
 
 ### [@faasjs/workflow-react](packages/react/README.md)

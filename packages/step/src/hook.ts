@@ -9,6 +9,7 @@ import {
 import {
   Knex, query, useKnex
 } from '@faasjs/knex'
+import { Redis, useRedis } from '@faasjs/redis'
 import type { Knex as K } from 'knex'
 import { Lang, LangEn } from './lang'
 import {
@@ -49,6 +50,7 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends 
   new?: (context: {
     stepId: TName
     knex: Knex
+    redis: Redis
     user?: User
   }) => Promise<{
     step: Partial<Step>
@@ -57,6 +59,7 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends 
     id: string
     stepId: TName
     knex: Knex
+    redis: Redis
     user?: User
   }) => Promise<{
     step: Partial<Step>
@@ -66,6 +69,7 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends 
   list?: (context: {
     stepId: TName
     knex: Knex
+    redis: Redis
     user?: User
   }) => Promise<{
     step: Partial<Step>
@@ -95,10 +99,12 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends 
   getUser?: (props: {
     http: Http
     knex: Knex
+    redis: Redis
   }) => Promise<User>
 
   getUsers?: (props: {
     knex: Knex
+    redis: Redis
     ids: string[]
   }) => Promise<User[]>
 
@@ -106,11 +112,17 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends 
   generateId?: () => Promise<string>
 
   afterMount?: () => void
-  /** run before draft, done, etc. */
+  /** run before draft, done, etc. and return extends */
   beforeAction?: (context: BaseContext<TName, TExtend>) => Promise<Partial<TExtend>>
 
   /** extend context */
   extends?: Partial<TExtend>
+
+  lockKey?: (context: {
+    stepId: TName
+    id?: string
+    data?: Partial<Steps[TName]['data']>
+  }) => string | undefined
 
   buildInvokeOptions?: BuildInvokeOptions<TExtend>
 }
@@ -168,6 +180,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
       }
     })
     const knex = useKnex()
+    const redis = useRedis()
     let step: Step
 
     if (options.afterMount)
@@ -179,6 +192,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
       const user = options.getUser ? await options.getUser({
         http,
         knex,
+        redis,
       }) : null
 
       switch (http.params.action) {
@@ -187,6 +201,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
             return options.new({
               stepId: options.stepId,
               knex,
+              redis,
               user,
             })
 
@@ -200,6 +215,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
               id: http.params.id,
               stepId: options.stepId,
               knex,
+              redis,
               user,
             })
 
@@ -207,6 +223,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
 
           const users = options.getUsers ? await options.getUsers({
             knex,
+            redis,
             ids: [
               record.createdBy,
               record.updatedBy,
@@ -235,6 +252,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
             return options.list({
               stepId: options.stepId,
               knex,
+              redis,
               user,
             })
 
@@ -257,6 +275,23 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
         default: {
           if (!http.params.id && !http.params.data)
             throw Error(options.lang.idOrDataRequired)
+
+          if (options.lockKey) {
+            const lockKey = options.lockKey({
+              stepId: options.stepId,
+              id: http.params.id,
+              data: http.params.data,
+            })
+
+            console.log('lockKey', lockKey)
+
+            if (lockKey)
+              try {
+                await redis.lock(`step:record:lock:${options.stepId}:${lockKey}`)
+              } catch (err) {
+                throw Error(options.lang.locked(lockKey))
+              }
+          }
 
           return await knex.transaction(async trx => {
             let record: Partial<StepRecord<TName>>
@@ -350,7 +385,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
               if (nextRecords.find(r => r.status === 'done'))
                 throw Error(options.lang.undoFailed)
 
-              for (const nextRecord of nextRecords) {
+              for (const nextRecord of nextRecords)
                 if (nextRecord.status !== 'canceled')
                   await actions.updateRecord({
                     stepId: nextRecord.stepId,
@@ -358,7 +393,6 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                     action: 'cancel',
                     note: options.lang.undoNote(record.id),
                   })
-              }
 
               record.status = 'draft'
               record.undoAt = new Date()

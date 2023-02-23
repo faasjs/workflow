@@ -1,4 +1,5 @@
 import { useKnex } from '@faasjs/knex'
+import { useRedis } from '@faasjs/redis'
 import Knex from 'knex'
 import { randomBytes } from 'crypto'
 import { up } from './packages/step/src/migrate'
@@ -67,7 +68,15 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
     await sub.destroy()
 
-    await useKnex({ config: { client: 'pg' } }).mount({ config: {} })
+    await useKnex({ config: { client: 'pg' } }).mount()
+
+    if (!process.env.REDIS_CONNECTION_BASE)
+      process.env.REDIS_CONNECTION_BASE = 'redis://redis_testing'
+
+    if (!process.env.SECRET_REDIS_CONNECTION)
+      process.env.SECRET_REDIS_CONNECTION = process.env.REDIS_CONNECTION_BASE + '/' + process.env.JEST_WORKER_ID
+
+    await useRedis().mount()
 
     init = true
   })

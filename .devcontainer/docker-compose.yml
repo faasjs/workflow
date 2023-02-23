@@ -36,3 +36,9 @@ services:
       POSTGRES_DB: testing
       POSTGRES_USER: testing
       POSTGRES_HOST_AUTH_METHOD: trust
+  redis_development:
+    image: redis:alpine
+    command: [sh, -c, "redis-server --save \"\" --appendonly no"]
+  redis_testing:
+    image: redis:alpine
+    command: [sh, -c, "redis-server --save \"\" --appendonly no"]

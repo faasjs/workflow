@@ -26,8 +26,11 @@
     "@faasjs/func": "*",
     "@faasjs/http": "*",
     "@faasjs/cloud_function": "*",
-    "@faasjs/knex": "*",
     "pg": "*"
+  },
+  "peerDependencies": {
+    "@faasjs/knex": "*",
+    "@faasjs/redis": "*"
   },
   "devDependencies": {
     "@faasjs/test": "*"

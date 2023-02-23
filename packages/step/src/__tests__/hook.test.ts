@@ -408,5 +408,24 @@ describe('hook', () => {
 
       expect(data).toMatchObject({ productName: 'extend' })
     })
+
+    it('work with lock', async () => {
+      const handler = test(useStepRecordFunc({
+        stepId: 'basic',
+        lockKey: ({ data }) => data.productName,
+      })).JSONhandler
+
+      await handler({
+        action: 'draft',
+        data: { productName: 'name' },
+      })
+
+      const { error } = await handler({
+        action: 'draft',
+        data: { productName: 'name' },
+      })
+
+      expect(error.message).toContain('Concurrent locked by key: name.')
+    })
   })
 })
