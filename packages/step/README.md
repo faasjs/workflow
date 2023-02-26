@@ -45,10 +45,6 @@ export default useStepRecordFunc({
 
 When you initiate a new step, its status is `draft`. You can only modify the data of step in this status.
 
-### done
-
-Done means the step is completed. You can only read the data of step in this status.
-
 ### hanging
 
 Hanging means that the step is waiting for some reason to complete.
@@ -60,6 +56,14 @@ Deference between `hanging` and `draft` is that hanging means user knows the ste
 Locked means that the step is waiting for some reason to complete, and the step is locked, which means that the step cannot be modified.
 
 If you want to modify the step, you need to unlock it first.
+
+### done
+
+Done means the step is completed. You can only read the data of step in this status.
+
+### rejected
+
+Rejected means that the step is rejected. You can only read the data of step in this status.
 
 ### canceled
 
