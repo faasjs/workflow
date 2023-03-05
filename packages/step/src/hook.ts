@@ -295,7 +295,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
               }
           }
 
-          const trx = http.params.trx || await knex.adapter.transaction()
+          const trx = http.params.trx || await knex.adapter.transactionProvider()()
 
           try {
             let record: Partial<StepRecord<TName>>
@@ -371,6 +371,11 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
               buildInvokeOptions: options.buildInvokeOptions,
             })
 
+            const save = async function () {
+              await actions.save()
+              if (!http.params.trx) await trx.commit()
+            }
+
             record.status = Status[http.params.action as StepRecordAction]
 
             record[Times[http.params.action as StepRecordAction]] = new Date()
@@ -414,7 +419,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                     ...extend,
                   }) || {}
 
-                if (!saved) await actions.save()
+                if (!saved) await save()
 
                 return {
                   ...(result || {}),
@@ -446,7 +451,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                     ...extend,
                   }) || {}
 
-                if (!saved) await actions.save()
+                if (!saved) await save()
 
                 return {
                   ...(result || {}),
@@ -472,18 +477,18 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                 break
             }
 
-            if (!saved) await actions.save()
+            if (!saved) await save()
 
             if (!result.id) result.id = record.id
-
-            if (!http.params.trx) await trx.commit()
 
             return result
           } catch (error) {
             if (!http.params.trx) {
-              console.error(error)
+              console.log('error', error)
               await trx.rollback()
             }
+
+            throw error
           }
         }
       }
