@@ -1,6 +1,4 @@
-import type {
-  Steps, StepRecordAction, StepRecord
-} from '@faasjs/workflow-types'
+import type { Steps, StepRecordAction } from '@faasjs/workflow-types'
 import { useStepRecordFunc, UseStepRecordFuncOptions } from './hook'
 import { invokeStep, InvokeStepOptions } from './invoke'
 
@@ -65,8 +63,7 @@ export type BuildInvokeOptions<TExtend extends Record<string, any>> = Partial<Pi
  * })
  * ```
  */
-export function buildInvoke<TExtend extends Record<string, any>> (options: BuildInvokeOptions<TExtend>):
-<TName extends keyof Steps>(props: InvokeStepOptions<TName, TExtend>) => Promise<StepRecord<TName>> {
+export function buildInvoke<TExtend extends Record<string, any>> (options: BuildInvokeOptions<TExtend>) {
   return async <TName extends keyof Steps>(props: InvokeStepOptions<TName, TExtend>) => {
     if (options.beforeInvoke) await options.beforeInvoke(props)
 
