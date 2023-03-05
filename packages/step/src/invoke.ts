@@ -3,6 +3,7 @@ import { Http, useHttp } from '@faasjs/http'
 import {
   Steps, StepRecordAction, StepRecord, User
 } from '@faasjs/workflow-types'
+import type { Knex } from 'knex'
 
 export type InvokeStepOptions<TName extends keyof Steps, TExtend extends Record<string, any>> = {
   stepId: TName
@@ -23,6 +24,8 @@ export type InvokeStepOptions<TName extends keyof Steps, TExtend extends Record<
   session?: Record<string, any>
   cf?: CloudFunction
   http?: Http
+  /** only available in mono mode */
+  trx?: Knex.Transaction
   /** @default steps */
   basePath?: string
 } & TExtend
@@ -54,6 +57,8 @@ export async function invokeStep<TName extends keyof Steps, TExtend extends Reco
     ...props.record,
   }
 
+  if (process.env.FaasMode === 'mono' && props.trx) body.trx = props.trx
+
   if (props.previous) {
     body.previousId = props.previous.id
     body.previousStepId = props.previous.stepId
@@ -62,7 +67,25 @@ export async function invokeStep<TName extends keyof Steps, TExtend extends Reco
       props.previous.ancestorIds : props.previous.ancestorIds.concat(props.previous.id).filter(Boolean)
   }
 
-  return await props.cf.invokeSync(`${props.basePath || 'steps'}/${props.stepId}/index`, {
+  const path = `${props.basePath || 'steps'}/${props.stepId}/index`
+
+  if (process.env.FaasMode === 'mono') {
+    let file
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      file = require(path + '.func').default
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      file = require(path + '.func.ts').default
+    }
+
+    return await file.export().handler({
+      headers: { cookie: props.http.session.config.key + '=' + props.http.session.encode(JSON.stringify(props.session || {})) },
+      body,
+    })
+  }
+
+  return await props.cf.invokeSync(path, {
     headers: { cookie: props.http.session.config.key + '=' + props.http.session.encode(JSON.stringify(props.session || {})) },
     body,
   }).then(res => {

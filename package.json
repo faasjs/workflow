@@ -8,8 +8,9 @@
     "lint": "eslint .",
     "test": "jest -w=1 --forceExit",
     "ci": "jest --silent --coverage --forceExit",
-    "build": "npm run build --workspaces --if-present && npm run build:types --workspaces --if-present",
-    "publish:devel": "node devel.cjs"
+    "build": "npm run build --workspaces --if-present",
+    "publish:devel": "node devel.cjs",
+    "clean": "rm -rf packages/*/dist coverage"
   },
   "devDependencies": {
     "@faasjs/jest": "*",

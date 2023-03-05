@@ -295,7 +295,9 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
               }
           }
 
-          return await knex.transaction(async trx => {
+          const trx = http.params.trx || await knex.adapter.transaction()
+
+          try {
             let record: Partial<StepRecord<TName>>
 
             const saved = false
@@ -474,8 +476,15 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
 
             if (!result.id) result.id = record.id
 
+            if (!http.params.trx) await trx.commit()
+
             return result
-          })
+          } catch (error) {
+            if (!http.params.trx) {
+              console.error(error)
+              await trx.rollback()
+            }
+          }
         }
       }
     }

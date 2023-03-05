@@ -9,6 +9,8 @@ import { buildInvoke, BuildInvokeOptions } from './builder'
 
 export type BaseActionParams<TName extends keyof Steps> = {
   action: StepRecordAction | 'new' | 'get' | 'list'
+  /** only available in mono mode */
+  trx?: K.Transaction
 } & Partial<StepRecord<TName>>
 
 export type BaseActionOptions<TName extends keyof Steps, TExtend = any> = BaseContext<TName, TExtend> & {
