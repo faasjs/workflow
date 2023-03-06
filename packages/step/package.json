@@ -23,6 +23,7 @@
     "node": ">=16.0.0"
   },
   "dependencies": {
+    "@faasjs/workflow-types": "*",
     "@faasjs/func": "*",
     "@faasjs/http": "*",
     "@faasjs/cloud_function": "*",
