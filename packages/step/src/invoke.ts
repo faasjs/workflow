@@ -69,22 +69,6 @@ export async function invokeStep<TName extends keyof Steps, TExtend extends Reco
 
   const path = `${props.basePath || 'steps'}/${props.stepId}/index`
 
-  if (process.env.FaasMode === 'mono') {
-    let file
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      file = require(path + '.func').default
-    } catch (error) {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      file = require(path + '.func.ts').default
-    }
-
-    return await file.export().handler({
-      headers: { cookie: props.http.session.config.key + '=' + props.http.session.encode(JSON.stringify(props.session || {})) },
-      body,
-    })
-  }
-
   return await props.cf.invokeSync(path, {
     headers: { cookie: props.http.session.config.key + '=' + props.http.session.encode(JSON.stringify(props.session || {})) },
     body,
