@@ -106,7 +106,6 @@ export function buildActions<TName extends keyof Steps> (props: {
       record: recordProps,
       previous,
       user: props.user,
-      trx: props.trx,
     })
   }
 
@@ -118,7 +117,6 @@ export function buildActions<TName extends keyof Steps> (props: {
       record: recordProps,
       previous,
       user: props.user,
-      trx: props.trx,
     })
   }
 
