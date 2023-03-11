@@ -443,6 +443,31 @@ describe('hook', () => {
       expect(data).toMatchObject({ productName: 'extend' })
     })
 
+    it('beforeAction with error', async () => {
+      const func = test(useStepRecordFunc<'basic', { extend: string }>({
+        stepId: 'basic',
+        getUser: async () => Promise.resolve({ id: 'test' }),
+        async beforeAction () {
+          throw Error('err')
+        },
+        draft: async ({ extend }) => {
+          return { productName: extend }
+        },
+        extends: { extend: 'test' },
+      }))
+
+      const { error } = await func.JSONhandler({
+        action: 'draft',
+        data: {},
+      })
+
+      expect(error).toMatchObject({ message: 'err' })
+
+      const count = await query('step_records').count()
+
+      expect(count[0]).toEqual({ count: 0 })
+    })
+
     it('work with lock', async () => {
       const handler = test(useStepRecordFunc({
         stepId: 'basic',
