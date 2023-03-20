@@ -19,11 +19,13 @@ export type BaseActionOptions<TName extends keyof Steps, TExtend = any> = BaseCo
   createRecord<TName2 extends keyof Steps>(recordProps: {
     stepId: TName2
     action: StepRecordAction
+    trx?: K.Transaction
   } & Partial<StepRecord<TName2>>): Promise<any>
   updateRecord<TName3 extends keyof Steps>(recordProps: {
     stepId: TName3
     action: StepRecordAction
     id: string
+    trx?: K.Transaction
   } & Partial<StepRecord<TName3>>): Promise<any>
 }
 
@@ -106,6 +108,7 @@ export function buildActions<TName extends keyof Steps> (props: {
       record: recordProps,
       previous,
       user: props.user,
+      trx: props.trx,
     })
   }
 
@@ -117,6 +120,7 @@ export function buildActions<TName extends keyof Steps> (props: {
       record: recordProps,
       previous,
       user: props.user,
+      trx: props.trx,
     })
   }
 
