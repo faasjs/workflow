@@ -19,7 +19,7 @@ export function StepRecordList (props: {
         { id: 'note' },
         {
           id: 'previousId',
-          render: (_, v) => v.previous &&
+          render: (_: any, v: any) => v.previous &&
             <a href={ `/steps/${v.previous.stepId}/${v.previousId}` }>{v.previousId} {v.previous.user?.name}</a>
         },
         {
