@@ -1,5 +1,8 @@
 # @faasjs/workflow-step
 
+[![License: MIT](https://img.shields.io/npm/l/@faasjs/workflow-step.svg)](https://github.com/faasjs/workflow/blob/main/packages/step/LICENSE)
+[![NPM Version](https://img.shields.io/npm/v/@faasjs/workflow-step/latest.svg)](https://www.npmjs.com/package/@faasjs/workflow-step)
+
 The `Step` and `StepRecord` component in FaasJS/Workflow.
 
 ## Examples

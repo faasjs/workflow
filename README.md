@@ -1,5 +1,6 @@
 # FaasJS/Workflow
 
+[![License: MIT](https://img.shields.io/npm/l/@faasjs/workflow-step.svg)](https://github.com/faasjs/workflow/blob/main/LICENSE)
 [![Last commit](https://img.shields.io/github/last-commit/faasjs/workflow)](https://github.com/faasjs/workflow)
 [![Unit Status](https://github.com/faasjs/workflow/actions/workflows/unit-test.yml/badge.svg)](https://github.com/faasjs/workflow/actions/workflows/unit-test.yml)
 [![Coverage Status](https://img.shields.io/codecov/c/github/faasjs/workflow.svg)](https://app.codecov.io/gh/faasjs/workflow)
