@@ -116,6 +116,9 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends 
   /** run before draft, done, etc. and return extends */
   beforeAction?: (context: BaseContext<TName, TExtend>) => Promise<Partial<TExtend>>
 
+  /** run after draft, done, etc. */
+  afterAction?: (context: BaseContext<TName, TExtend>) => Promise<void>
+
   /** extend context */
   extends?: Partial<TExtend>
 
@@ -468,6 +471,21 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
             if (!saved) await actions.save()
 
             if (!result.id) result.id = record.id
+
+            if (options.afterAction)
+              await options.afterAction({
+                action: http.params.action as StepRecordAction,
+                step,
+                user,
+                lang: options.lang as Lang,
+                record,
+                id: record.id,
+                data: record.data,
+                note: record.note,
+                trx,
+                ...actions,
+                ...extend,
+              })
 
             if (newTrx)
               await trx.commit()
