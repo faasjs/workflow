@@ -101,6 +101,7 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends 
     http: Http
     knex: Knex
     redis: Redis
+    params: BaseActionParams<TName>
   }) => Promise<User>
 
   getUsers?: (props: {
@@ -198,6 +199,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
         http,
         knex,
         redis,
+        params: http.params,
       }) : null
 
       switch (http.params.action) {
