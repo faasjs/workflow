@@ -283,29 +283,6 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
           if (!http.params.id && !http.params.data)
             throw Error(options.lang.idOrDataRequired)
 
-          let record: Partial<StepRecord<TName>>
-
-          if (http.params.id) {
-            record = await query('step_records').where('id', http.params.id).first()
-          }
-
-          if (options.lockKey) {
-            const lockKey = options.lockKey({
-              stepId: options.stepId,
-              id: http.params.id,
-              data: Object.assign({}, record?.data, http.params.data),
-            })
-
-            console.log('lockKey', lockKey)
-
-            if (lockKey)
-              try {
-                await redis.lock(`step:record:lock:${options.stepId}:${lockKey}`)
-              } catch (err) {
-                throw Error(options.lang.locked(lockKey))
-              }
-          }
-
           const newTrx = !http.params.trx
           const trx = http.params.trx || await knex.adapter.transaction()
 
@@ -313,8 +290,31 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
             const saved = false
             const newRecord = !http.params.id
 
+            let record: Partial<StepRecord<TName>>
+
+            if (http.params.id) {
+              record = await trx('step_records').where('id', http.params.id).first()
+            }
+
+            if (options.lockKey) {
+              const lockKey = options.lockKey({
+                stepId: options.stepId,
+                id: http.params.id,
+                data: Object.assign({}, record?.data, http.params.data),
+              })
+
+              console.log('lockKey', lockKey)
+
+              if (lockKey)
+                try {
+                  await redis.lock(`step:record:lock:${options.stepId}:${lockKey}`)
+                } catch (err) {
+                  throw Error(options.lang.locked(lockKey))
+                }
+            }
+
             if (http.params.id && !newRecord) {
-                throw Error(options.lang.recordNotFound(http.params.id))
+              throw Error(options.lang.recordNotFound(http.params.id))
             } else {
               record = {
                 id: options.generateId ? await options.generateId() : randomUUID(),
