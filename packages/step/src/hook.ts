@@ -287,14 +287,12 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
           const trx = http.params.trx || await knex.adapter.transaction()
 
           try {
-            const saved = false
-            const newRecord = !http.params.id
-
             let record: Partial<StepRecord<TName>>
 
-            if (http.params.id) {
+            const saved = false
+            const newRecord = !http.params.id
+            if (http.params.id)
               record = await trx('step_records').where('id', http.params.id).first()
-            }
 
             if (options.lockKey) {
               const lockKey = options.lockKey({
@@ -313,8 +311,9 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                 }
             }
 
-            if (http.params.id && !newRecord) {
-              throw Error(options.lang.recordNotFound(http.params.id))
+            if (http.params.id) {
+              if (!record)
+                throw Error(options.lang.recordNotFound(http.params.id))
             } else {
               record = {
                 id: options.generateId ? await options.generateId() : randomUUID(),
