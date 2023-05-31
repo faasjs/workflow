@@ -291,29 +291,14 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
 
             const saved = false
             const newRecord = !http.params.id
-            if (http.params.id)
+            if (http.params.id) {
               record = await trx('step_records').where('id', http.params.id).first()
 
-            if (options.lockKey) {
-              const lockKey = options.lockKey({
-                stepId: options.stepId,
-                id: http.params.id,
-                data: Object.assign({}, record?.data, http.params.data),
-              })
-
-              console.log('lockKey', lockKey)
-
-              if (lockKey)
-                try {
-                  await redis.lock(`step:record:lock:${options.stepId}:${lockKey}`)
-                } catch (err) {
-                  throw Error(options.lang.locked(lockKey))
-                }
-            }
-
-            if (http.params.id) {
               if (!record)
                 throw Error(options.lang.recordNotFound(http.params.id))
+
+              if (http.params.data)
+                record.data = Object.assign(record.data, http.params.data)
             } else {
               record = {
                 id: options.generateId ? await options.generateId() : randomUUID(),
@@ -323,6 +308,21 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                 data: {},
                 createdAt: new Date(),
               }
+            }
+
+            if (options.lockKey) {
+              const lockKey = options.lockKey({
+                stepId: options.stepId,
+                id: http.params.id,
+                data: record.data,
+              })
+
+              if (lockKey)
+                try {
+                  await redis.lock(`step:record:lock:${options.stepId}:${lockKey}`)
+                } catch (err) {
+                  throw Error(options.lang.locked(lockKey))
+                }
             }
 
             ([
@@ -336,9 +336,6 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
             ] as (keyof StepRecord<TName>)[]).forEach((k) => {
               if (http.params[k]) (record as any)[k] = http.params[k]
             })
-
-            if (http.params.data)
-              record.data = Object.assign(record.data, http.params.data)
 
             if (http.params.previousId) {
               record.previousId = http.params.previousId
@@ -419,6 +416,8 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                     ...actions,
                     ...extend,
                   }) || {}
+
+                console.log('r', result)
 
                 if (!result.message) result.message = options.lang.undoSuccess
 

@@ -390,6 +390,36 @@ describe('hook', () => {
       expect(record.undoBy).toEqual('test')
     })
 
+    it('undo and cancel', async () => {
+      const func = test(useStepRecordFunc({
+        stepId: 'basic',
+        getUser: async () => Promise.resolve({ id: 'test' }),
+        summary: async ({ data }) => ({ name: `${data.productName}` }),
+        undo: async ({ cancel }) => cancel('note')
+      }))
+
+      const { data } = await func.JSONhandler({
+        action: 'done',
+        data: { productName: 'name' },
+      })
+
+      expect(await func.JSONhandler({
+        action: 'undo',
+        id: data.id,
+        note: 'note',
+      })).toMatchObject({
+        statusCode: 200,
+        data: {}
+      })
+
+      const record = await query('step_records').first()
+
+      expect(record).toMatchObject({ status: 'canceled' })
+
+      expect(record.undoAt).toBeDefined()
+      expect(record.undoBy).toEqual('test')
+    })
+
     it('reject', async () => {
       const func = test(useStepRecordFunc({
         stepId: 'basic',
@@ -468,7 +498,7 @@ describe('hook', () => {
       expect(count[0]).toEqual({ count: 0 })
     })
 
-    it('work with lock', async () => {
+    it('work with lockKey and data', async () => {
       const handler = test(useStepRecordFunc({
         stepId: 'basic',
         lockKey: ({ data }) => data.productName,
@@ -485,6 +515,31 @@ describe('hook', () => {
       })
 
       expect(error.message).toContain('Concurrent locked by key: name.')
+    })
+
+    it('work with lockKey and id', async () => {
+      await query('step_records').insert({
+        id: 'test',
+        stepId: 'basic',
+        status: 'draft',
+        data: '{"productName":"productName"}',
+      })
+      const handler = test(useStepRecordFunc({
+        stepId: 'basic',
+        lockKey: ({ data }) => data.productName,
+      })).JSONhandler
+
+      await handler({
+        id: 'test',
+        action: 'draft',
+      })
+
+      const { error } = await handler({
+        id: 'test',
+        action: 'draft',
+      })
+
+      expect(error.message).toContain('Concurrent locked by key: productName.')
     })
   })
 })
