@@ -305,7 +305,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                 ancestorIds: [],
                 stepId: options.stepId,
                 summary: {},
-                data: {},
+                data: http.params.data || {},
                 createdAt: new Date(),
               }
             }

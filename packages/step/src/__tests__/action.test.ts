@@ -72,9 +72,10 @@ describe('action', () => {
         stepId: 'basic',
       })
 
-      const cancel = actions.cancel('note')
+      actions.cancel('note')
+      const canceled = await actions.save()
 
-      expect(cancel).toMatchObject({
+      expect(canceled).toMatchObject({
         status: 'canceled',
         note: 'note',
         canceledAt: expect.any(Date),
