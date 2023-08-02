@@ -187,13 +187,12 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
     })
     const knex = useKnex()
     const redis = useRedis()
-    let step: Step
 
     if (options.afterMount)
       options.afterMount()
 
     return async function () {
-      if (!step) step = await query('steps').where('id', options.stepId).first()
+      const step = await query('steps').where('id', options.stepId).first()
 
       const user = options.getUser ? await options.getUser({
         http,
