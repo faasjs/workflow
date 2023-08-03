@@ -387,19 +387,19 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
               case 'undo': {
                 const nextRecords = await trx('step_records')
                   .where('previousId', record.id)
+                  .whereNot('status', 'canceled')
                   .select('id', 'stepId', 'status')
 
-                if (nextRecords.find(r => r.status === 'done'))
+                if (nextRecords.some(r => r.status === 'done'))
                   throw Error(options.lang.undoFailed)
 
                 for (const nextRecord of nextRecords)
-                  if (nextRecord.status !== 'canceled')
-                    await actions.updateRecord({
-                      stepId: nextRecord.stepId,
-                      id: nextRecord.id,
-                      action: 'cancel',
-                      note: options.lang.undoNote(record.id),
-                    })
+                  await actions.updateRecord({
+                    stepId: nextRecord.stepId,
+                    id: nextRecord.id,
+                    action: 'cancel',
+                    note: options.lang.undoNote(record.id),
+                  })
 
                 if (options.undo)
                   result = await options.undo({
@@ -415,8 +415,6 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                     ...actions,
                     ...extend,
                   }) || {}
-
-                console.log('r', result)
 
                 if (!result.message) result.message = options.lang.undoSuccess
 
