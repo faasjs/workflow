@@ -70,7 +70,10 @@ export async function invokeStep<TName extends keyof Steps, TExtend extends Reco
   const path = `${props.basePath || 'steps'}/${props.stepId}/index`
 
   return await props.cf.invokeSync(path, {
-    headers: { cookie: props.http.session.config.key + '=' + props.http.session.encode(JSON.stringify(props.session || {})) },
+    headers: {
+      ...props.http.headers,
+      cookie: props.http.session.config.key + '=' + props.http.session.encode(JSON.stringify(props.session || {}))
+    },
     body,
   }).then(res => {
     if (res.originBody) {
