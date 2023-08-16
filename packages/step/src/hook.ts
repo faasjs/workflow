@@ -288,7 +288,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
           try {
             let record: Partial<StepRecord<TName>>
 
-            const saved = false
+            let saved = false
             const newRecord = !http.params.id
             if (http.params.id) {
               record = await trx('step_records').where('id', http.params.id).first()
@@ -366,7 +366,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
               record,
               user,
               trx,
-              saved,
+              saved: () => saved = true,
               cf,
               http,
               newRecord,

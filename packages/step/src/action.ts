@@ -35,7 +35,7 @@ export function buildActions<TName extends keyof Steps> (props: {
   record: Partial<StepRecord<TName>>
   user: User
   trx: K.Transaction
-  saved: boolean
+  saved(): void
   cf: CloudFunction
   http: Http
   newRecord: boolean
@@ -69,7 +69,7 @@ export function buildActions<TName extends keyof Steps> (props: {
         .returning('*')
         .then(r => r[0]))
     }
-    props.saved = true
+    props.saved()
     props.newRecord = false
 
     return props.record as StepRecord<TName>

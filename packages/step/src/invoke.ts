@@ -69,11 +69,29 @@ export async function invokeStep<TName extends keyof Steps, TExtend extends Reco
 
   const path = `${props.basePath || 'steps'}/${props.stepId}/index`
 
+  const headers = {
+    ...props.http.headers,
+    cookie: props.http.session.config.key + '=' + props.http.session.encode(JSON.stringify(props.session || {}))
+  }
+
+  if (process.env.FaasMode === 'mono') {
+    let file
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      file = require(path + '.func').default
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      file = require(path + '.func.ts').default
+    }
+
+    return await file.export().handler({
+      headers,
+      body,
+    })
+  }
+
   return await props.cf.invokeSync(path, {
-    headers: {
-      ...props.http.headers,
-      cookie: props.http.session.config.key + '=' + props.http.session.encode(JSON.stringify(props.session || {}))
-    },
+    headers,
     body,
   }).then(res => {
     if (res.originBody) {
