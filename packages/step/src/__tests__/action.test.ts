@@ -7,6 +7,7 @@ describe('action', () => {
   it('should work', async () => {
     const cf = useCloudFunction()
     const http = await useHttp().mount()
+    let saved = false
 
     await transaction(async trx => {
       const actions = buildActions({
@@ -28,7 +29,7 @@ describe('action', () => {
         newRecord: false,
         user: { id: 'test' },
         trx,
-        saved: false,
+        saved: () => saved = true,
         cf,
         http,
         buildInvokeOptions: {
@@ -47,6 +48,7 @@ describe('action', () => {
 
       const save = await actions.save()
 
+      expect(saved).toBeTruthy()
       expect(save).toEqual({
         id: 'id',
         ancestorIds: [],
