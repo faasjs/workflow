@@ -3,6 +3,7 @@ import { Http, useHttp } from '@faasjs/http'
 import {
   Steps, StepRecordAction, StepRecord, User
 } from '@faasjs/workflow-types'
+import { resolve } from 'path'
 import type { Knex } from 'knex'
 
 export type InvokeStepOptions<TName extends keyof Steps, TExtend extends Record<string, any>> = {
@@ -75,13 +76,14 @@ export async function invokeStep<TName extends keyof Steps, TExtend extends Reco
   }
 
   if (process.env.FaasMode === 'mono') {
+    const localPath = resolve(process.env.FaasRoot, path)
     let file
     try {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      file = require(path + '.func').default
+      file = require(localPath + '.func').default
     } catch (error) {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      file = require(path + '.func.ts').default
+      file = require(localPath + '.func.ts').default
     }
 
     return await file.export().handler({
