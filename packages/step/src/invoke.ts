@@ -1,6 +1,6 @@
 import { CloudFunction, useCloudFunction } from '@faasjs/cloud_function'
 import { Http, useHttp } from '@faasjs/http'
-import {
+import type {
   Steps, StepRecordAction, StepRecord, User
 } from '@faasjs/workflow-types'
 import { resolve } from 'path'
