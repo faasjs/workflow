@@ -387,7 +387,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
 
             switch (params.action) {
               case 'undo': {
-                const nextRecords = await trx('step_records')
+                const nextRecords: Pick<StepRecord<any>, 'id' | 'stepId' | 'status'>[] = await trx('step_records')
                   .where('previousId', record.id)
                   .whereNot('status', 'canceled')
                   .select('id', 'stepId', 'status')
