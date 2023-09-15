@@ -89,6 +89,12 @@ export async function invokeStep<TName extends keyof Steps, TExtend extends Reco
     return await file.export().handler({
       headers,
       body,
+    }).then((res: any) => {
+      if (res.originBody) {
+        const body = JSON.parse(res.originBody)
+        return body.error ? Promise.reject(Error(body.error.message)) : body.data
+      }
+      return res
     })
   }
 

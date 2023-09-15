@@ -492,8 +492,10 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
 
             return result
           } catch (error) {
-            console.log('error', error)
-            await trx.rollback()
+            console.error(error)
+
+            if (newTrx)
+              await trx.rollback(error)
 
             throw error
           }
