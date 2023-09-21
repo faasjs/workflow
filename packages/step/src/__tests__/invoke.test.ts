@@ -1,6 +1,7 @@
 import { Func } from '@faasjs/func'
 import { Knex, query } from '@faasjs/knex'
 import { invokeStep } from '../invoke'
+import { Http } from '@faasjs/http'
 
 describe('invokeStep', () => {
   it('work without previous', async () => {
@@ -64,9 +65,10 @@ describe('invokeStep with mono mode', () => {
     process.env.FaasMode = 'mono'
 
     const knex = new Knex()
+    const http = new Http()
 
     const func = new Func({
-      plugins: [knex],
+      plugins: [http, knex],
       async handler () {
         return await knex.transaction(async trx => {
           await trx('steps').insert({
@@ -85,7 +87,11 @@ describe('invokeStep with mono mode', () => {
       }
     })
 
-    await func.export().handler({})
+    const response = await func.export().handler({}, {request_id: 'test'})
+
+    expect(response.headers).toMatchObject({
+      'X-FaasJS-Request-Id': 'test'
+    })
 
     const record = await query('step_records').first()
 

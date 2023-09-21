@@ -79,9 +79,13 @@ export async function invokeStep<TName extends keyof Steps, TExtend extends Reco
     const localPath = resolve(process.env.FaasRoot, path)
     let file
     try {
+      const filePath = require.resolve(localPath + '.func')
+      if (require.cache[filePath]) delete (require.cache[filePath])
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      file = require(localPath + '.func').default
+      file = require(filePath).default
     } catch (error) {
+      const filePath = require.resolve(localPath + '.func.ts')
+      if (require.cache[filePath]) delete (require.cache[filePath])
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       file = require(localPath + '.func.ts').default
     }
@@ -89,7 +93,7 @@ export async function invokeStep<TName extends keyof Steps, TExtend extends Reco
     return await file.export().handler({
       headers,
       body,
-    }).then((res: any) => {
+    }, {request_id: props.http.headers?.['x-faasjs-request-id']}).then((res: any) => {
       if (res.originBody) {
         const body = JSON.parse(res.originBody)
         return body.error ? Promise.reject(Error(body.error.message)) : body.data
