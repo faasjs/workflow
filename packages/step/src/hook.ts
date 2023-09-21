@@ -203,7 +203,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
         params,
       }) : null
 
-      switch (data.event.params.action) {
+      switch (params.action) {
         case 'new':
           if (options.new)
             return options.new({
@@ -220,14 +220,14 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
 
           if (options.get)
             return options.get({
-              id: http.params.id,
+              id: params.id,
               stepId: options.stepId,
               knex,
               redis,
               user,
             })
 
-          const record = await knex.query('step_records').where('id', http.params.id).first()
+          const record = await knex.query('step_records').where('id', params.id).first()
 
           const users = options.getUsers ? await options.getUsers({
             knex,
