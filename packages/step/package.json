@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@faasjs/workflow-types": "*",
-    "@faasjs/func": "0.0.3-beta.108",
+    "@faasjs/func": "0.0.3-beta.109",
     "@faasjs/http": "0.0.3-beta.108",
     "@faasjs/cloud_function": "0.0.3-beta.109",
     "pg": "*"
