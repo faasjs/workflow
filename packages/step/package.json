@@ -22,18 +22,21 @@
     "npm": ">=8.0.0",
     "node": ">=16.0.0"
   },
-  "dependencies": {
-    "@faasjs/workflow-types": "*",
-    "@faasjs/func": "0.0.3-beta.109",
-    "@faasjs/http": "0.0.3-beta.108",
-    "@faasjs/cloud_function": "0.0.3-beta.109",
-    "pg": "*"
-  },
   "peerDependencies": {
     "@faasjs/knex": "*",
-    "@faasjs/redis": "*"
+    "@faasjs/redis": "*",
+    "@faasjs/workflow-types": "*",
+    "@faasjs/func": "*",
+    "@faasjs/http": "*",
+    "@faasjs/cloud_function": "*",
+    "pg": "*"
   },
   "devDependencies": {
+    "@faasjs/workflow-types": "*",
+    "@faasjs/func": "*",
+    "@faasjs/http": "*",
+    "@faasjs/cloud_function": "*",
+    "pg": "*",
     "@faasjs/test": "*"
   },
   "scripts": {
