@@ -14,6 +14,7 @@
   },
   "devDependencies": {
     "@faasjs/jest": "*",
+    "@faasjs/test": "*",
     "@faasjs/eslint-config-recommended": "*",
     "tsup": "*"
   },

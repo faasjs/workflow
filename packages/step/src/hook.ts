@@ -7,7 +7,7 @@ import {
   useHttp, HttpError, Http
 } from '@faasjs/http'
 import {
-  Knex, query, useKnex
+  Knex, useKnex
 } from '@faasjs/knex'
 import { Redis, useRedis } from '@faasjs/redis'
 import type { Knex as K } from 'knex'
@@ -185,14 +185,18 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
         }
       }
     })
-    const knex = useKnex()
-    const redis = useRedis()
+    useKnex()
+    useRedis()
 
     if (options.afterMount)
       options.afterMount()
 
     return async function (data) {
-      const step = await query('steps').where('id', options.stepId).first()
+      // get latest context
+      const knex = useKnex()
+      const redis = useRedis()
+
+      const step = await knex.query('steps').where('id', options.stepId).first()
 
       const params = data.event.params
 
