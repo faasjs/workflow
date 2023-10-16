@@ -32,6 +32,8 @@
     "pg": "*"
   },
   "devDependencies": {
+    "@faasjs/knex": "*",
+    "@faasjs/redis": "*",
     "@faasjs/workflow-types": "*",
     "@faasjs/func": "*",
     "@faasjs/http": "*",
