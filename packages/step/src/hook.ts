@@ -6,9 +6,7 @@ import { useCloudFunction } from '@faasjs/cloud_function'
 import {
   useHttp, HttpError, Http
 } from '@faasjs/http'
-import {
-  Knex, useKnex
-} from '@faasjs/knex'
+import { Knex, useKnex } from '@faasjs/knex'
 import { Redis, useRedis } from '@faasjs/redis'
 import type { Knex as K } from 'knex'
 import { Lang, LangEn } from './lang'
@@ -196,9 +194,11 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
       const knex = useKnex()
       const redis = useRedis()
 
-      const step = await knex.query('steps').where('id', options.stepId).first()
-
       const params = data.event.params
+      const newTrx = !params.trx && !http.params.trx
+      const query: K = params.trx || http.params.trx || knex.query
+
+      const step = await query('steps').where('id', options.stepId).first()
 
       const user = options.getUser ? await options.getUser({
         http,
@@ -231,7 +231,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
               user,
             })
 
-          const record = await knex.query('step_records').where('id', params.id).first()
+          const record = await query('step_records').where('id', params.id).first()
 
           const users = options.getUsers ? await options.getUsers({
             knex,
@@ -268,7 +268,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
               user,
             })
 
-          const rows = await knex.query('step_records')
+          const rows = await query('step_records')
             .where({ stepId: options.stepId })
             .orderBy('createdAt', 'desc')
             .limit(options.pagination.pageSize)
@@ -280,7 +280,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
             pagination: {
               current: options.pagination.current,
               pageSize: options.pagination.pageSize,
-              total: await knex.query('step_records').where({ stepId: options.stepId }).count().then(row => row[0].count),
+              total: await query('step_records').where({ stepId: options.stepId }).count().then(row => row[0].count),
             }
           }
         }
@@ -288,7 +288,6 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
           if (!params.id && !params.data)
             throw Error(options.lang.idOrDataRequired)
 
-          const newTrx = !params.trx && !http.params.trx
           const trx = params.trx || http.params.trx || await knex.adapter.transaction()
 
           try {
