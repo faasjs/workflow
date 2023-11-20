@@ -38,7 +38,7 @@ describe('builder', () => {
         })
       })
 
-      it.each(actions)('with action %1', async (action) => {
+      it.each(actions)('with action %1', async action => {
         expect(await func.JSONhandler({ action })).toMatchObject({
           statusCode: 500,
           error: { message: '[params] 缺少 id 或 data' },
@@ -48,15 +48,20 @@ describe('builder', () => {
       it('with unknown action', async () => {
         expect(await func.JSONhandler({ action: 'action' })).toMatchObject({
           statusCode: 500,
-          error: { message: '[params] action 必须是 get, list, draft, hang, done, cancel, lock, unlock, undo 中的一个' },
+          error: {
+            message:
+              '[params] action 必须是 get, list, draft, hang, done, cancel, lock, unlock, undo 中的一个',
+          },
         })
       })
 
       it('with unknown record', async () => {
-        expect(await func.JSONhandler({
-          action: 'done',
-          id: 1,
-        })).toMatchObject({
+        expect(
+          await func.JSONhandler({
+            action: 'done',
+            id: 1,
+          })
+        ).toMatchObject({
           statusCode: 500,
           error: { message: '找不到记录#1' },
         })
@@ -65,22 +70,32 @@ describe('builder', () => {
       it('should work with special lang', async () => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        expect(() => test(buildHook({ lang: LangZh })({ lang: { stepIdRequired: 'required' } }))).toThrowError('required')
+        expect(() =>
+          test(
+            buildHook({ lang: LangZh })({
+              lang: { stepIdRequired: 'required' },
+            })
+          )
+        ).toThrowError('required')
       })
     })
 
     it('should work with extends', async () => {
-      const func = test(buildHook<{ key: string }>({ extends: { key: 'value' } })({
-        stepId: 'stepId',
-        async draft ({ key }) {
-          return { message: key }
-        }
-      }))
+      const func = test(
+        buildHook<{ key: string }>({ extends: { key: 'value' } })({
+          stepId: 'stepId',
+          async draft({ key }) {
+            return { message: key }
+          },
+        })
+      )
 
-      expect(await func.JSONhandler({
-        action: 'draft',
-        data: {},
-      })).toMatchObject({
+      expect(
+        await func.JSONhandler({
+          action: 'draft',
+          data: {},
+        })
+      ).toMatchObject({
         statusCode: 200,
         data: { message: 'value' },
       })
@@ -93,9 +108,9 @@ describe('builder', () => {
         uid: string
       }>({
         basePath: __dirname,
-        async beforeInvoke (props) {
+        async beforeInvoke(props) {
           props.session = { uid: props.uid }
-        }
+        },
       })
 
       const result = await invoke({
@@ -105,7 +120,9 @@ describe('builder', () => {
         uid: 'test',
       })
 
-      const record = await query('step_records').where({ id: result.id }).first()
+      const record = await query('step_records')
+        .where({ id: result.id })
+        .first()
 
       expect(record).toMatchObject({
         id: result.id,

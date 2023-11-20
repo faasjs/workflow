@@ -1,25 +1,26 @@
 import type {
-  Steps, StepRecord, StepRecordAction, Step, User,
+  Steps,
+  StepRecord,
+  StepRecordAction,
+  Step,
+  User,
 } from '@faasjs/workflow-types'
 import { Func, useFunc } from '@faasjs/func'
 import { useCloudFunction } from '@faasjs/cloud_function'
-import {
-  useHttp, HttpError, Http
-} from '@faasjs/http'
+import { useHttp, HttpError, Http } from '@faasjs/http'
 import { Knex, useKnex } from '@faasjs/knex'
 import { Redis, useRedis } from '@faasjs/redis'
 import type { Knex as K } from 'knex'
 import { Lang, LangEn } from './lang'
-import {
-  Status, Times, Bys
-} from './enum'
-import {
-  buildActions, BaseActionParams, BaseActionOptions,
-} from './action'
+import { Status, Times, Bys } from './enum'
+import { buildActions, BaseActionParams, BaseActionOptions } from './action'
 import { randomUUID } from 'crypto'
 import { BuildInvokeOptions } from './builder'
 
-export type BaseContext<TName extends keyof Steps, TExtend extends Record<string, any>> = {
+export type BaseContext<
+  TName extends keyof Steps,
+  TExtend extends Record<string, any>
+> = {
   step: Partial<Step>
   id: string
   action: StepRecordAction
@@ -37,7 +38,10 @@ export type ListPagination = {
   total: number
 }
 
-export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends Record<string, any>> = {
+export type UseStepRecordFuncOptions<
+  TName extends keyof Steps,
+  TExtend extends Record<string, any>
+> = {
   stepId: TName
 
   /**
@@ -82,16 +86,34 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends 
   }
 
   /** use data as summary as default */
-  summary?: (context: Omit<BaseContext<TName, TExtend>, 'action' | 'lang'>) => Promise<Steps[TName]['summary']>
+  summary?: (
+    context: Omit<BaseContext<TName, TExtend>, 'action' | 'lang'>
+  ) => Promise<Steps[TName]['summary']>
 
-  draft?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['draft']>
-  hang?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['hang']>
-  done?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['done']>
-  cancel?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['cancel']>
-  lock?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['lock']>
-  unlock?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['unlock']>
-  undo?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['undo']>
-  reject?: (options: BaseActionOptions<TName, TExtend>) => Promise<Steps[TName]['reject']>
+  draft?: (
+    options: BaseActionOptions<TName, TExtend>
+  ) => Promise<Steps[TName]['draft']>
+  hang?: (
+    options: BaseActionOptions<TName, TExtend>
+  ) => Promise<Steps[TName]['hang']>
+  done?: (
+    options: BaseActionOptions<TName, TExtend>
+  ) => Promise<Steps[TName]['done']>
+  cancel?: (
+    options: BaseActionOptions<TName, TExtend>
+  ) => Promise<Steps[TName]['cancel']>
+  lock?: (
+    options: BaseActionOptions<TName, TExtend>
+  ) => Promise<Steps[TName]['lock']>
+  unlock?: (
+    options: BaseActionOptions<TName, TExtend>
+  ) => Promise<Steps[TName]['unlock']>
+  undo?: (
+    options: BaseActionOptions<TName, TExtend>
+  ) => Promise<Steps[TName]['undo']>
+  reject?: (
+    options: BaseActionOptions<TName, TExtend>
+  ) => Promise<Steps[TName]['reject']>
 
   lang?: Partial<Lang>
 
@@ -113,7 +135,9 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends 
 
   afterMount?: () => void
   /** run before draft, done, etc. and return extends */
-  beforeAction?: (context: BaseContext<TName, TExtend>) => Promise<Partial<TExtend>>
+  beforeAction?: (
+    context: BaseContext<TName, TExtend>
+  ) => Promise<Partial<TExtend>>
 
   /** run after draft, done, etc. */
   afterAction?: (context: BaseContext<TName, TExtend>) => Promise<void>
@@ -130,13 +154,16 @@ export type UseStepRecordFuncOptions<TName extends keyof Steps, TExtend extends 
   buildInvokeOptions?: BuildInvokeOptions<TExtend>
 }
 
-export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Record<string, any>> (
-  options: UseStepRecordFuncOptions<TName, TExtend>
-) : Func {
-  options.lang = !options.lang ? LangEn : {
-    ...LangEn,
-    ...options.lang,
-  }
+export function useStepRecordFunc<
+  TName extends keyof Steps,
+  TExtend extends Record<string, any>
+>(options: UseStepRecordFuncOptions<TName, TExtend>): Func {
+  options.lang = !options.lang
+    ? LangEn
+    : {
+        ...LangEn,
+        ...options.lang,
+      }
 
   if (!options.stepId) throw Error(options.lang.stepIdRequired)
 
@@ -160,10 +187,10 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                 'unlock',
                 'undo',
                 'reject',
-              ]
-            }
+              ],
+            },
           },
-          onError (type, key) {
+          onError(type, key) {
             switch (key) {
               case 'action':
                 switch (type) {
@@ -180,14 +207,13 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                 }
             }
           },
-        }
-      }
+        },
+      },
     })
     useKnex()
     useRedis()
 
-    if (options.afterMount)
-      options.afterMount()
+    if (options.afterMount) options.afterMount()
 
     return async function (data) {
       // get latest context
@@ -200,12 +226,14 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
 
       const step = await query('steps').where('id', options.stepId).first()
 
-      const user = options.getUser ? await options.getUser({
-        http,
-        knex,
-        redis,
-        params,
-      }) : null
+      const user = options.getUser
+        ? await options.getUser({
+            http,
+            knex,
+            redis,
+            params,
+          })
+        : null
 
       switch (params.action) {
         case 'new':
@@ -219,8 +247,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
 
           return { step }
         case 'get': {
-          if (!params.id)
-            throw Error(options.lang.idRequired)
+          if (!params.id) throw Error(options.lang.idRequired)
 
           if (options.get)
             return options.get({
@@ -231,22 +258,26 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
               user,
             })
 
-          const record = await query('step_records').where('id', params.id).first()
+          const record = await query('step_records')
+            .where('id', params.id)
+            .first()
 
-          const users = options.getUsers ? await options.getUsers({
-            knex,
-            redis,
-            ids: [
-              record.createdBy,
-              record.updatedBy,
-              record.hangedBy,
-              record.doneBy,
-              record.canceledBy,
-              record.lockedBy,
-              record.unlockedBy,
-              record.undoBy,
-            ].filter(Boolean),
-          }) : []
+          const users = options.getUsers
+            ? await options.getUsers({
+                knex,
+                redis,
+                ids: [
+                  record.createdBy,
+                  record.updatedBy,
+                  record.hangedBy,
+                  record.doneBy,
+                  record.canceledBy,
+                  record.lockedBy,
+                  record.unlockedBy,
+                  record.undoBy,
+                ].filter(Boolean),
+              })
+            : []
 
           return {
             step,
@@ -255,10 +286,13 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
           }
         }
         case 'list': {
-          options.pagination = Object.assign({
-            current: 1,
-            pageSize: 10,
-          }, options.pagination || {})
+          options.pagination = Object.assign(
+            {
+              current: 1,
+              pageSize: 10,
+            },
+            options.pagination || {}
+          )
 
           if (options.list)
             return options.list({
@@ -272,7 +306,9 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
             .where({ stepId: options.stepId })
             .orderBy('createdAt', 'desc')
             .limit(options.pagination.pageSize)
-            .offset((options.pagination.current - 1) * options.pagination.pageSize)
+            .offset(
+              (options.pagination.current - 1) * options.pagination.pageSize
+            )
 
           return {
             step,
@@ -280,15 +316,19 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
             pagination: {
               current: options.pagination.current,
               pageSize: options.pagination.pageSize,
-              total: await query('step_records').where({ stepId: options.stepId }).count().then(row => row[0].count),
-            }
+              total: await query('step_records')
+                .where({ stepId: options.stepId })
+                .count()
+                .then(row => row[0].count),
+            },
           }
         }
         default: {
           if (!params.id && !params.data)
             throw Error(options.lang.idOrDataRequired)
 
-          const trx = params.trx || http.params.trx || await knex.adapter.transaction()
+          const trx =
+            params.trx || http.params.trx || (await knex.adapter.transaction())
 
           try {
             let record: Partial<StepRecord<TName>>
@@ -298,14 +338,15 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
             if (params.id) {
               record = await trx('step_records').where('id', params.id).first()
 
-              if (!record)
-                throw Error(options.lang.recordNotFound(params.id))
+              if (!record) throw Error(options.lang.recordNotFound(params.id))
 
               if (params.data)
                 record.data = Object.assign(record.data, params.data)
             } else {
               record = {
-                id: options.generateId ? await options.generateId() : randomUUID(),
+                id: options.generateId
+                  ? await options.generateId()
+                  : randomUUID(),
                 ancestorIds: [],
                 stepId: options.stepId,
                 summary: {},
@@ -323,21 +364,24 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
 
               if (lockKey)
                 try {
-                  await redis.lock(`step:record:lock:${options.stepId}:${lockKey}`)
+                  await redis.lock(
+                    `step:record:lock:${options.stepId}:${lockKey}`
+                  )
                 } catch (err) {
                   throw Error(options.lang.locked(lockKey))
                 }
             }
-
-            ([
-              'note',
-              'doneBy',
-              'hangedBy',
-              'canceledBy',
-              'lockedBy',
-              'unlockedBy',
-              'undoBy',
-            ] as (keyof StepRecord<TName>)[]).forEach((k) => {
+            ;(
+              [
+                'note',
+                'doneBy',
+                'hangedBy',
+                'canceledBy',
+                'lockedBy',
+                'unlockedBy',
+                'undoBy',
+              ] as (keyof StepRecord<TName>)[]
+            ).forEach(k => {
               if (params[k]) (record as any)[k] = params[k]
             })
 
@@ -348,22 +392,27 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
               record.ancestorIds = params.ancestorIds
             }
 
-            if (params.unlockedAt) record.unlockedAt = new Date(params.unlockedAt)
+            if (params.unlockedAt)
+              record.unlockedAt = new Date(params.unlockedAt)
 
-            const extend: Partial<TExtend> = options.extends || Object.create(null)
+            const extend: Partial<TExtend> =
+              options.extends || Object.create(null)
 
             if (options.beforeAction)
-              Object.assign(extend, await options.beforeAction({
-                action: params.action as StepRecordAction,
-                step,
-                record,
-                id: record.id,
-                data: record.data,
-                trx,
-                user,
-                lang: options.lang as Lang,
-                ...extend,
-              }))
+              Object.assign(
+                extend,
+                await options.beforeAction({
+                  action: params.action as StepRecordAction,
+                  step,
+                  record,
+                  id: record.id,
+                  data: record.data,
+                  trx,
+                  user,
+                  lang: options.lang as Lang,
+                  ...extend,
+                })
+              )
 
             const actions = buildActions({
               options,
@@ -371,7 +420,7 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
               record,
               user,
               trx,
-              saved: () => saved = true,
+              saved: () => (saved = true),
               cf,
               http,
               newRecord,
@@ -381,16 +430,22 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
             record.status = Status[params.action as StepRecordAction]
 
             record[Times[params.action as StepRecordAction]] = new Date()
-            record[Bys[params.action as StepRecordAction]] = user ? user.id : null
+            record[Bys[params.action as StepRecordAction]] = user
+              ? user.id
+              : null
 
             if (params.action === 'done' && record.createdAt)
-              record.duration = new Date().getTime() - record.createdAt.getTime()
+              record.duration =
+                new Date().getTime() - record.createdAt.getTime()
 
             let result: Record<string, any> = {}
 
             switch (params.action) {
               case 'undo': {
-                const nextRecords: Pick<StepRecord<any>, 'id' | 'stepId' | 'status'>[] = await trx('step_records')
+                const nextRecords: Pick<
+                  StepRecord<any>,
+                  'id' | 'stepId' | 'status'
+                >[] = await trx('step_records')
                   .where('previousId', record.id)
                   .whereNot('status', 'canceled')
                   .select('id', 'stepId', 'status')
@@ -407,19 +462,20 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                   })
 
                 if (options.undo)
-                  result = await options.undo({
-                    action: params.action as StepRecordAction,
-                    step,
-                    user,
-                    lang: options.lang as Lang,
-                    record,
-                    id: record.id,
-                    data: record.data,
-                    note: record.note,
-                    trx,
-                    ...actions,
-                    ...extend,
-                  }) || {}
+                  result =
+                    (await options.undo({
+                      action: params.action as StepRecordAction,
+                      step,
+                      user,
+                      lang: options.lang as Lang,
+                      record,
+                      id: record.id,
+                      data: record.data,
+                      note: record.note,
+                      trx,
+                      ...actions,
+                      ...extend,
+                    })) || {}
 
                 if (!result.message) result.message = options.lang.undoSuccess
 
@@ -435,19 +491,20 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                     })
 
                 if (options.reject)
-                  result = await options.reject({
-                    action: params.action as StepRecordAction,
-                    step,
-                    user,
-                    lang: options.lang as Lang,
-                    record,
-                    id: record.id,
-                    data: record.data,
-                    note: record.note,
-                    trx,
-                    ...actions,
-                    ...extend,
-                  }) || {}
+                  result =
+                    (await options.reject({
+                      action: params.action as StepRecordAction,
+                      step,
+                      user,
+                      lang: options.lang as Lang,
+                      record,
+                      id: record.id,
+                      data: record.data,
+                      note: record.note,
+                      trx,
+                      ...actions,
+                      ...extend,
+                    })) || {}
 
                 if (!result.message) result.message = options.lang.rejectSuccess
 
@@ -455,19 +512,20 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
               }
               default:
                 if (options[params.action as StepRecordAction])
-                  result = await options[params.action as StepRecordAction]({
-                    action: params.action as StepRecordAction,
-                    step,
-                    user,
-                    lang: options.lang as Lang,
-                    record,
-                    id: record.id,
-                    data: record.data,
-                    note: record.note,
-                    trx,
-                    ...actions,
-                    ...extend,
-                  }) || {}
+                  result =
+                    (await options[params.action as StepRecordAction]({
+                      action: params.action as StepRecordAction,
+                      step,
+                      user,
+                      lang: options.lang as Lang,
+                      record,
+                      id: record.id,
+                      data: record.data,
+                      note: record.note,
+                      trx,
+                      ...actions,
+                      ...extend,
+                    })) || {}
                 break
             }
 
@@ -490,15 +548,13 @@ export function useStepRecordFunc<TName extends keyof Steps, TExtend extends Rec
                 ...extend,
               })
 
-            if (newTrx)
-              await trx.commit()
+            if (newTrx) await trx.commit()
 
             return result
           } catch (error) {
             console.error(error)
 
-            if (newTrx)
-              await trx.rollback(error)
+            if (newTrx) await trx.rollback(error)
 
             throw error
           }

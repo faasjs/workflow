@@ -36,7 +36,7 @@ describe('invokeStep', () => {
         id: 'previous',
         stepId: 'previous',
         ancestorIds: ['ancestor'],
-        user: { id: 'previousUser' }
+        user: { id: 'previousUser' },
       },
       session: { uid: 'test' },
       basePath: __dirname,
@@ -69,7 +69,7 @@ describe('invokeStep with mono mode', () => {
 
     const func = new Func({
       plugins: [http, knex],
-      async handler () {
+      async handler() {
         return await knex.transaction(async trx => {
           await trx('steps').insert({
             id: 'test',
@@ -84,7 +84,7 @@ describe('invokeStep with mono mode', () => {
             trx,
           })
         })
-      }
+      },
     })
 
     const response = await func.export().handler({}, { request_id: 'test' })

@@ -11,7 +11,17 @@ export const Status: Record<StepRecordAction, StepRecordStatus> = {
   reject: 'rejected',
 }
 
-export const Times: Record<StepRecordAction, 'createdAt' | 'hangedAt' | 'doneAt' | 'canceledAt' | 'lockedAt' | 'unlockedAt' | 'undoAt' | 'rejectedAt'> = {
+export const Times: Record<
+  StepRecordAction,
+  | 'createdAt'
+  | 'hangedAt'
+  | 'doneAt'
+  | 'canceledAt'
+  | 'lockedAt'
+  | 'unlockedAt'
+  | 'undoAt'
+  | 'rejectedAt'
+> = {
   draft: 'createdAt',
   hang: 'hangedAt',
   done: 'doneAt',
@@ -22,7 +32,17 @@ export const Times: Record<StepRecordAction, 'createdAt' | 'hangedAt' | 'doneAt'
   reject: 'rejectedAt',
 }
 
-export const Bys: Record<StepRecordAction, 'createdBy' | 'hangedBy' | 'doneBy' | 'canceledBy' | 'lockedBy' | 'unlockedBy' | 'undoBy' | 'rejectedBy'> = {
+export const Bys: Record<
+  StepRecordAction,
+  | 'createdBy'
+  | 'hangedBy'
+  | 'doneBy'
+  | 'canceledBy'
+  | 'lockedBy'
+  | 'unlockedBy'
+  | 'undoBy'
+  | 'rejectedBy'
+> = {
   draft: 'createdBy',
   hang: 'hangedBy',
   done: 'doneBy',

@@ -29,14 +29,14 @@ describe('action', () => {
         newRecord: false,
         user: { id: 'test' },
         trx,
-        saved: () => saved = true,
+        saved: () => (saved = true),
         cf,
         http,
         buildInvokeOptions: {
-          async beforeInvoke (props) {
+          async beforeInvoke(props) {
             props.session = { uid: props.user.id }
-          }
-        }
+          },
+        },
       })
 
       expect(actions).toMatchObject({

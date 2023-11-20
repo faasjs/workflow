@@ -1,3 +1,3 @@
-export function StepRecordForm () {
+export function StepRecordForm() {
   return <>StepRecordForm</>
 }

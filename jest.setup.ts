@@ -34,10 +34,11 @@ if (typeof window !== 'undefined') {
     const db = `testing_${process.env.JEST_WORKER_ID}`
 
     if (!process.env.SECRET_KNEX_CONNECTION)
-      process.env.SECRET_KNEX_CONNECTION = process.env.KNEX_CONNECTION_BASE + '/' + db
+      process.env.SECRET_KNEX_CONNECTION = `${process.env.KNEX_CONNECTION_BASE}/${db}`
 
     if (!process.env.SECRET_HTTP_COOKIE_SESSION_SECRET)
-      process.env.SECRET_HTTP_COOKIE_SESSION_SECRET = randomBytes(32).toString('hex')
+      process.env.SECRET_HTTP_COOKIE_SESSION_SECRET =
+        randomBytes(32).toString('hex')
 
     const base = Knex({
       client: 'pg',
@@ -47,7 +48,9 @@ if (typeof window !== 'undefined') {
     try {
       await base.raw(`DROP DATABASE IF EXISTS ${db};`)
     } catch (error) {
-      await base.raw(`SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = '${db}' AND pid <> pg_backend_pid();`)
+      await base.raw(
+        `SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = '${db}' AND pid <> pg_backend_pid();`
+      )
     }
 
     await base.raw(`CREATE DATABASE ${db};`)
@@ -74,7 +77,7 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
       process.env.REDIS_CONNECTION_BASE = 'redis://redis_testing'
 
     if (!process.env.SECRET_REDIS_CONNECTION)
-      process.env.SECRET_REDIS_CONNECTION = process.env.REDIS_CONNECTION_BASE + '/' + process.env.JEST_WORKER_ID
+      process.env.SECRET_REDIS_CONNECTION = `${process.env.REDIS_CONNECTION_BASE}/${process.env.JEST_WORKER_ID}`
 
     await useRedis().mount()
 
@@ -87,6 +90,8 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
   })
 
   global.beforeEach(async () => {
-    await useKnex().raw('TRUNCATE steps RESTART IDENTITY;TRUNCATE step_records RESTART IDENTITY;')
+    await useKnex().raw(
+      'TRUNCATE steps RESTART IDENTITY;TRUNCATE step_records RESTART IDENTITY;'
+    )
   })
 }

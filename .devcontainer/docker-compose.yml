@@ -2,7 +2,7 @@ version: '3'
 
 services:
   app:
-    image: faasjs/vscode
+    image: faasjs/vscode:debian
     command: sleep infinity
     tty: true
     environment:

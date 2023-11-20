@@ -5,7 +5,8 @@
     "packages/*"
   ],
   "scripts": {
-    "lint": "eslint .",
+    "lint": "biome lint .",
+    "format": "biome format --write .",
     "test": "jest -w=1 --forceExit",
     "ci": "jest --silent --coverage --forceExit",
     "build": "npm run build --workspaces --if-present",
@@ -15,17 +16,12 @@
   "devDependencies": {
     "@faasjs/jest": "*",
     "@faasjs/test": "*",
-    "@faasjs/eslint-config-recommended": "*",
-    "tsup": "*"
+    "tsup": "*",
+    "@biomejs/biome": "*"
   },
   "engines": {
     "npm": ">=8.0.0",
     "node": ">=16.0.0"
-  },
-  "eslintConfig": {
-    "extends": [
-      "@faasjs/recommended"
-    ]
   },
   "jest": {
     "transform": {

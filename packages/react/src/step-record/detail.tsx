@@ -1,3 +1,3 @@
-export function StepRecordDetail () {
+export function StepRecordDetail() {
   return <>StepRecordDetail</>
 }

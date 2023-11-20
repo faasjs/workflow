@@ -6,7 +6,10 @@ import { StepRecordList } from '../list'
 import { FaasReactClient } from '@faasjs/react'
 
 describe('StepRecordList', () => {
-  let originalFetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
+  let originalFetch: (
+    input: RequestInfo | URL,
+    init?: RequestInit
+  ) => Promise<Response>
 
   beforeEach(() => {
     originalFetch = window.fetch
@@ -14,23 +17,24 @@ describe('StepRecordList', () => {
       return Promise.resolve({
         status: 200,
         headers: new Map([['Content-Type', 'application/json']]),
-        text: async () => JSON.stringify({
-          data: {
-            rows: [
-              {
-                id: 'id',
-                status: 'draft',
-                summary: { key: 'value' },
-                createdAt: Date.now()
-              }
-            ],
-            pagination: {
-              current: 1,
-              pageSize: 10,
-              total: 20,
-            }
-          }
-        })
+        text: async () =>
+          JSON.stringify({
+            data: {
+              rows: [
+                {
+                  id: 'id',
+                  status: 'draft',
+                  summary: { key: 'value' },
+                  createdAt: Date.now(),
+                },
+              ],
+              pagination: {
+                current: 1,
+                pageSize: 10,
+                total: 20,
+              },
+            },
+          }),
       }) as unknown as Promise<Response>
     })
     FaasReactClient({ domain: 'test' })

@@ -1,9 +1,7 @@
 import { useStepRecordFunc } from '../hook'
 import { test } from '@faasjs/test'
 import { query } from '@faasjs/knex'
-import {
-  Status, Times, Bys
-} from '../enum'
+import { Status, Times, Bys } from '../enum'
 import type { StepRecordAction } from '@faasjs/workflow-types'
 
 declare module '@faasjs/workflow-types/steps' {
@@ -41,10 +39,12 @@ describe('hook', () => {
     })
   })
   describe('should valid basic params', () => {
-    const func = test(useStepRecordFunc({
-      stepId: 'stepId',
-      getUser: async () => Promise.resolve({ id: 'test' }),
-    }))
+    const func = test(
+      useStepRecordFunc({
+        stepId: 'stepId',
+        getUser: async () => Promise.resolve({ id: 'test' }),
+      })
+    )
 
     it('without params', async () => {
       expect(await func.JSONhandler({})).toMatchObject({
@@ -53,7 +53,7 @@ describe('hook', () => {
       })
     })
 
-    it.each(actions)('with action %1', async (action) => {
+    it.each(actions)('with action %1', async action => {
       expect(await func.JSONhandler({ action })).toMatchObject({
         statusCode: 500,
         error: { message: '[params] id or data is required.' },
@@ -63,15 +63,20 @@ describe('hook', () => {
     it('with unknown action', async () => {
       expect(await func.JSONhandler({ action: 'action' })).toMatchObject({
         statusCode: 500,
-        error: { message: '[params] action must be in get, list, draft, hang, done, cancel, lock, unlock, undo.' },
+        error: {
+          message:
+            '[params] action must be in get, list, draft, hang, done, cancel, lock, unlock, undo.',
+        },
       })
     })
 
     it('with unknown record', async () => {
-      expect(await func.JSONhandler({
-        action: 'done',
-        id: 1,
-      })).toMatchObject({
+      expect(
+        await func.JSONhandler({
+          action: 'done',
+          id: 1,
+        })
+      ).toMatchObject({
         statusCode: 500,
         error: { message: 'Record#1 not found.' },
       })
@@ -80,10 +85,12 @@ describe('hook', () => {
 
   describe('actions', () => {
     describe('new', () => {
-      const func = test(useStepRecordFunc({
-        stepId: 'basic',
-        getUser: async () => Promise.resolve({ id: 'test' }),
-      }))
+      const func = test(
+        useStepRecordFunc({
+          stepId: 'basic',
+          getUser: async () => Promise.resolve({ id: 'test' }),
+        })
+      )
 
       it('should work', async () => {
         const { data } = await func.JSONhandler({ action: 'new' })
@@ -91,35 +98,42 @@ describe('hook', () => {
           step: {
             id: 'basic',
             name: 'name',
-          }
+          },
         })
       })
 
       it('should work with handler', async () => {
-        const func = test(useStepRecordFunc({
-          stepId: 'basic',
-          new: async () => ({ step: { id: 'id' } })
-        }))
+        const func = test(
+          useStepRecordFunc({
+            stepId: 'basic',
+            new: async () => ({ step: { id: 'id' } }),
+          })
+        )
 
         expect(await func.JSONhandler({ action: 'new' })).toMatchObject({
           statusCode: 200,
-          data: { step: { id: 'id' } }
+          data: { step: { id: 'id' } },
         })
       })
     })
 
     describe('get', () => {
-      const func = test(useStepRecordFunc({
-        stepId: 'basic',
-        getUser: async () => Promise.resolve({ id: 'test' }),
-        getUsers: async () => Promise.resolve([{ id: 'test' }]),
-      }))
+      const func = test(
+        useStepRecordFunc({
+          stepId: 'basic',
+          getUser: async () => Promise.resolve({ id: 'test' }),
+          getUsers: async () => Promise.resolve([{ id: 'test' }]),
+        })
+      )
 
       it('should work with record', async () => {
-        const record = await query('step_records').insert({
-          stepId: 'basic',
-          status: 'draft',
-        }).returning('*').then(r => r[0])
+        const record = await query('step_records')
+          .insert({
+            stepId: 'basic',
+            status: 'draft',
+          })
+          .returning('*')
+          .then(r => r[0])
 
         const { data } = await func.JSONhandler({
           action: 'get',
@@ -141,23 +155,27 @@ describe('hook', () => {
       })
 
       it('should work with handler', async () => {
-        const func = test(useStepRecordFunc({
-          stepId: 'basic',
-          get: async () => ({
-            step: { id: 'id' },
-            users: [],
-            record: {
-              id: 'id',
-              status: 'draft',
-              data: {},
-            }
+        const func = test(
+          useStepRecordFunc({
+            stepId: 'basic',
+            get: async () => ({
+              step: { id: 'id' },
+              users: [],
+              record: {
+                id: 'id',
+                status: 'draft',
+                data: {},
+              },
+            }),
           })
-        }))
+        )
 
-        expect(await func.JSONhandler({
-          action: 'get',
-          id: 'id',
-        })).toMatchObject({
+        expect(
+          await func.JSONhandler({
+            action: 'get',
+            id: 'id',
+          })
+        ).toMatchObject({
           statusCode: 200,
           data: {
             step: { id: 'id' },
@@ -166,35 +184,42 @@ describe('hook', () => {
               id: 'id',
               status: 'draft',
               data: {},
-            }
-          }
+            },
+          },
         })
       })
 
       it('should fail without id', async () => {
         expect(await func.JSONhandler({ action: 'get' })).toMatchObject({
           statusCode: 500,
-          error: { message: '[params] id is required.' }
+          error: { message: '[params] id is required.' },
         })
       })
     })
 
     describe('list', () => {
-      const func = test(useStepRecordFunc({
-        stepId: 'basic',
-        getUser: async () => Promise.resolve({ id: 'test' }),
-      }))
+      const func = test(
+        useStepRecordFunc({
+          stepId: 'basic',
+          getUser: async () => Promise.resolve({ id: 'test' }),
+        })
+      )
 
       it('should work with record', async () => {
-        const record = await query('step_records').insert({
-          stepId: 'basic',
-          status: 'draft',
-        }).returning('*').then(r => r[0])
+        const record = await query('step_records')
+          .insert({
+            stepId: 'basic',
+            status: 'draft',
+          })
+          .returning('*')
+          .then(r => r[0])
 
-        expect(await func.JSONhandler({
-          action: 'list',
-          id: record.id,
-        })).toMatchObject({
+        expect(
+          await func.JSONhandler({
+            action: 'list',
+            id: record.id,
+          })
+        ).toMatchObject({
           statusCode: 200,
           data: {
             step: {
@@ -207,42 +232,46 @@ describe('hook', () => {
                 status: 'draft',
                 stepId: 'basic',
                 data: {},
-              }
+              },
             ],
             pagination: {
               current: 1,
               pageSize: 10,
               total: 1,
-            }
-          }
+            },
+          },
         })
       })
 
       it('should work with handler', async () => {
-        const func = test(useStepRecordFunc({
-          stepId: 'basic',
-          getUser: async () => Promise.resolve({ id: 'test' }),
-          list: async () => ({
-            step: { id: 'id' },
-            rows: [
-              {
-                id: 'id',
-                status: 'draft',
-                data: {}
-              }
-            ],
-            pagination: {
-              current: 1,
-              pageSize: 10,
-              total: 1,
-            }
+        const func = test(
+          useStepRecordFunc({
+            stepId: 'basic',
+            getUser: async () => Promise.resolve({ id: 'test' }),
+            list: async () => ({
+              step: { id: 'id' },
+              rows: [
+                {
+                  id: 'id',
+                  status: 'draft',
+                  data: {},
+                },
+              ],
+              pagination: {
+                current: 1,
+                pageSize: 10,
+                total: 1,
+              },
+            }),
           })
-        }))
+        )
 
-        expect(await func.JSONhandler({
-          action: 'list',
-          id: 'id',
-        })).toMatchObject({
+        expect(
+          await func.JSONhandler({
+            action: 'list',
+            id: 'id',
+          })
+        ).toMatchObject({
           statusCode: 200,
           data: {
             step: { id: 'id' },
@@ -250,32 +279,36 @@ describe('hook', () => {
               {
                 id: 'id',
                 status: 'draft',
-                data: {}
-              }
+                data: {},
+              },
             ],
             pagination: {
               current: 1,
               pageSize: 10,
               total: 1,
-            }
-          }
+            },
+          },
         })
       })
     })
 
-    it.each(actions)('%s should work without handler', async (action) => {
-      const func = test(useStepRecordFunc({
-        stepId: 'basic',
-        getUser: async () => Promise.resolve({ id: 'test' }),
-        summary: async ({ data }) => ({ name: `${data.productName}` })
-      }))
+    it.each(actions)('%s should work without handler', async action => {
+      const func = test(
+        useStepRecordFunc({
+          stepId: 'basic',
+          getUser: async () => Promise.resolve({ id: 'test' }),
+          summary: async ({ data }) => ({ name: `${data.productName}` }),
+        })
+      )
 
-      expect(await func.JSONhandler({
-        action,
-        data: { productName: 'name' },
-      })).toMatchObject({
+      expect(
+        await func.JSONhandler({
+          action,
+          data: { productName: 'name' },
+        })
+      ).toMatchObject({
         statusCode: 200,
-        data: {}
+        data: {},
       })
 
       const record = await query('step_records').first()
@@ -289,53 +322,20 @@ describe('hook', () => {
       expect(record[Bys[action]]).toEqual('test')
     })
 
-    it.each(actions)('%s should work with handler', async (action) => {
-      const func = test(useStepRecordFunc({
-        stepId: 'basic',
-        getUser: async () => Promise.resolve({ id: 'test' }),
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        [`${action}`]: async ({ data }) => {
-          data.productName = 'test'
+    it.each(actions)('%s should work with handler', async action => {
+      const func = test(
+        useStepRecordFunc({
+          stepId: 'basic',
+          getUser: async () => Promise.resolve({ id: 'test' }),
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          [`${action}`]: async ({ data }) => {
+            data.productName = 'test'
 
-          return { productName: data.productName, }
-        },
-      }))
-
-      const { data } = await func.JSONhandler({
-        action,
-        data: { productName: 'name' },
-      })
-
-      const record = await query('step_records').first()
-
-      expect(data).toMatchObject({
-        id: record.id,
-        productName: 'test',
-      })
-
-      expect(record).toMatchObject({
-        status: Status[action],
-        summary: { productName: 'test' },
-        data: { productName: 'test' },
-      })
-
-      expect(record[Times[action]]).toBeDefined()
-    })
-
-    it.each(actions)('%s should work with handler and extends', async (action) => {
-      const func = test(useStepRecordFunc<'basic', { key: string }>({
-        stepId: 'basic',
-        getUser: async () => Promise.resolve({ id: 'test' }),
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        [`${action}`]: async ({ data, key }) => {
-          data.productName = 'test'
-
-          return { productName: data[key], }
-        },
-        extends: { key: 'productName' },
-      }))
+            return { productName: data.productName }
+          },
+        })
+      )
 
       const { data } = await func.JSONhandler({
         action,
@@ -357,26 +357,70 @@ describe('hook', () => {
 
       expect(record[Times[action]]).toBeDefined()
     })
+
+    it.each(actions)(
+      '%s should work with handler and extends',
+      async action => {
+        const func = test(
+          useStepRecordFunc<'basic', { key: string }>({
+            stepId: 'basic',
+            getUser: async () => Promise.resolve({ id: 'test' }),
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            [`${action}`]: async ({ data, key }) => {
+              data.productName = 'test'
+
+              return { productName: data[key] }
+            },
+            extends: { key: 'productName' },
+          })
+        )
+
+        const { data } = await func.JSONhandler({
+          action,
+          data: { productName: 'name' },
+        })
+
+        const record = await query('step_records').first()
+
+        expect(data).toMatchObject({
+          id: record.id,
+          productName: 'test',
+        })
+
+        expect(record).toMatchObject({
+          status: Status[action],
+          summary: { productName: 'test' },
+          data: { productName: 'test' },
+        })
+
+        expect(record[Times[action]]).toBeDefined()
+      }
+    )
 
     it('undo', async () => {
-      const func = test(useStepRecordFunc({
-        stepId: 'basic',
-        getUser: async () => Promise.resolve({ id: 'test' }),
-        summary: async ({ data }) => ({ name: `${data.productName}` })
-      }))
+      const func = test(
+        useStepRecordFunc({
+          stepId: 'basic',
+          getUser: async () => Promise.resolve({ id: 'test' }),
+          summary: async ({ data }) => ({ name: `${data.productName}` }),
+        })
+      )
 
       const { data } = await func.JSONhandler({
         action: 'done',
         data: { productName: 'name' },
       })
 
-      expect(await func.JSONhandler({
-        action: 'undo',
-        id: data.id,
-        note: 'note',
-      })).toMatchObject({
+      expect(
+        await func.JSONhandler({
+          action: 'undo',
+          id: data.id,
+          note: 'note',
+        })
+      ).toMatchObject({
         statusCode: 200,
-        data: {}
+        data: {},
       })
 
       const record = await query('step_records').first()
@@ -391,25 +435,29 @@ describe('hook', () => {
     })
 
     it('undo and cancel', async () => {
-      const func = test(useStepRecordFunc({
-        stepId: 'basic',
-        getUser: async () => Promise.resolve({ id: 'test' }),
-        summary: async ({ data }) => ({ name: `${data.productName}` }),
-        undo: async ({ cancel }) => cancel('note')
-      }))
+      const func = test(
+        useStepRecordFunc({
+          stepId: 'basic',
+          getUser: async () => Promise.resolve({ id: 'test' }),
+          summary: async ({ data }) => ({ name: `${data.productName}` }),
+          undo: async ({ cancel }) => cancel('note'),
+        })
+      )
 
       const { data } = await func.JSONhandler({
         action: 'done',
         data: { productName: 'name' },
       })
 
-      expect(await func.JSONhandler({
-        action: 'undo',
-        id: data.id,
-        note: 'note',
-      })).toMatchObject({
+      expect(
+        await func.JSONhandler({
+          action: 'undo',
+          id: data.id,
+          note: 'note',
+        })
+      ).toMatchObject({
         statusCode: 200,
-        data: {}
+        data: {},
       })
 
       const record = await query('step_records').first()
@@ -421,11 +469,13 @@ describe('hook', () => {
     })
 
     it('reject', async () => {
-      const func = test(useStepRecordFunc({
-        stepId: 'basic',
-        getUser: async () => Promise.resolve({ id: 'test' }),
-        summary: async ({ data }) => ({ name: `${data.productName}` })
-      }))
+      const func = test(
+        useStepRecordFunc({
+          stepId: 'basic',
+          getUser: async () => Promise.resolve({ id: 'test' }),
+          summary: async ({ data }) => ({ name: `${data.productName}` }),
+        })
+      )
 
       await query('step_records').insert({
         id: 'id',
@@ -433,14 +483,16 @@ describe('hook', () => {
         status: 'done',
       })
 
-      expect(await func.JSONhandler({
-        action: 'reject',
-        note: 'note',
-        previousId: 'id',
-        data: {},
-      })).toMatchObject({
+      expect(
+        await func.JSONhandler({
+          action: 'reject',
+          note: 'note',
+          previousId: 'id',
+          data: {},
+        })
+      ).toMatchObject({
         statusCode: 200,
-        data: {}
+        data: {},
       })
 
       const records = await query('step_records').orderBy('createdAt', 'asc')
@@ -455,15 +507,17 @@ describe('hook', () => {
     })
 
     it('beforeAction', async () => {
-      const func = test(useStepRecordFunc<'basic', { extend: string }>({
-        stepId: 'basic',
-        getUser: async () => Promise.resolve({ id: 'test' }),
-        beforeAction: async () => ({ extend: 'extend' }),
-        draft: async ({ extend }) => {
-          return { productName: extend }
-        },
-        extends: { extend: 'test' },
-      }))
+      const func = test(
+        useStepRecordFunc<'basic', { extend: string }>({
+          stepId: 'basic',
+          getUser: async () => Promise.resolve({ id: 'test' }),
+          beforeAction: async () => ({ extend: 'extend' }),
+          draft: async ({ extend }) => {
+            return { productName: extend }
+          },
+          extends: { extend: 'test' },
+        })
+      )
 
       const { data } = await func.JSONhandler({
         action: 'draft',
@@ -474,17 +528,19 @@ describe('hook', () => {
     })
 
     it('beforeAction with error', async () => {
-      const func = test(useStepRecordFunc<'basic', { extend: string }>({
-        stepId: 'basic',
-        getUser: async () => Promise.resolve({ id: 'test' }),
-        async beforeAction () {
-          throw Error('err')
-        },
-        draft: async ({ extend }) => {
-          return { productName: extend }
-        },
-        extends: { extend: 'test' },
-      }))
+      const func = test(
+        useStepRecordFunc<'basic', { extend: string }>({
+          stepId: 'basic',
+          getUser: async () => Promise.resolve({ id: 'test' }),
+          async beforeAction() {
+            throw Error('err')
+          },
+          draft: async ({ extend }) => {
+            return { productName: extend }
+          },
+          extends: { extend: 'test' },
+        })
+      )
 
       const { error } = await func.JSONhandler({
         action: 'draft',
@@ -499,10 +555,12 @@ describe('hook', () => {
     })
 
     it('work with lockKey and data', async () => {
-      const handler = test(useStepRecordFunc({
-        stepId: 'basic',
-        lockKey: ({ data }) => data.productName,
-      })).JSONhandler
+      const handler = test(
+        useStepRecordFunc({
+          stepId: 'basic',
+          lockKey: ({ data }) => data.productName,
+        })
+      ).JSONhandler
 
       await handler({
         action: 'draft',
@@ -524,10 +582,12 @@ describe('hook', () => {
         status: 'draft',
         data: '{"productName":"productName"}',
       })
-      const handler = test(useStepRecordFunc({
-        stepId: 'basic',
-        lockKey: ({ data }) => data.productName,
-      })).JSONhandler
+      const handler = test(
+        useStepRecordFunc({
+          stepId: 'basic',
+          lockKey: ({ data }) => data.productName,
+        })
+      ).JSONhandler
 
       await handler({
         id: 'test',

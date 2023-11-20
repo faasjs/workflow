@@ -19,14 +19,19 @@ import { invokeStep, InvokeStepOptions } from './invoke'
  * })
  * ```
  */
-export function buildHook<TExtend extends Record<string, any>> (
-  builderOptions: Omit<UseStepRecordFuncOptions<any, TExtend>, StepRecordAction | 'stepId'>
+export function buildHook<TExtend extends Record<string, any>>(
+  builderOptions: Omit<
+    UseStepRecordFuncOptions<any, TExtend>,
+    StepRecordAction | 'stepId'
+  >
 ) {
-  return <TName extends keyof Steps>(options: UseStepRecordFuncOptions<TName, TExtend>) => {
+  return <TName extends keyof Steps>(
+    options: UseStepRecordFuncOptions<TName, TExtend>
+  ) => {
     if (options.lang && builderOptions.lang)
       options.lang = {
         ...builderOptions.lang,
-        ...options.lang
+        ...options.lang,
       }
 
     return useStepRecordFunc<TName, TExtend>({
@@ -36,7 +41,9 @@ export function buildHook<TExtend extends Record<string, any>> (
   }
 }
 
-export type BuildInvokeOptions<TExtend extends Record<string, any>> = Partial<Pick<InvokeStepOptions<any, TExtend>, 'basePath' | 'cf' | 'http'>> & {
+export type BuildInvokeOptions<TExtend extends Record<string, any>> = Partial<
+  Pick<InvokeStepOptions<any, TExtend>, 'basePath' | 'cf' | 'http'>
+> & {
   beforeInvoke?: (options: InvokeStepOptions<any, TExtend>) => Promise<void>
 }
 
@@ -63,8 +70,12 @@ export type BuildInvokeOptions<TExtend extends Record<string, any>> = Partial<Pi
  * })
  * ```
  */
-export function buildInvoke<TExtend extends Record<string, any>> (options: BuildInvokeOptions<TExtend>) {
-  return async <TName extends keyof Steps>(props: InvokeStepOptions<TName, TExtend>) => {
+export function buildInvoke<TExtend extends Record<string, any>>(
+  options: BuildInvokeOptions<TExtend>
+) {
+  return async <TName extends keyof Steps>(
+    props: InvokeStepOptions<TName, TExtend>
+  ) => {
     if (options.beforeInvoke) await options.beforeInvoke(props)
 
     return invokeStep<TName, TExtend>({
