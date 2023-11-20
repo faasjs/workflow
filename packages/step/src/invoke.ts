@@ -91,12 +91,10 @@ export async function invokeStep<
     try {
       const filePath = require.resolve(`${localPath}.func`)
       if (require.cache[filePath]) delete require.cache[filePath]
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
       file = require(filePath).default
     } catch (error) {
       const filePath = require.resolve(`${localPath}.func.ts`)
       if (require.cache[filePath]) delete require.cache[filePath]
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
       file = require(`${localPath}.func.ts`).default
     }
 

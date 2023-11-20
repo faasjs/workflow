@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 const { version } = require('./package.json')
 const { execSync } = require('child_process')
 const { readFileSync, writeFileSync } = require('fs')

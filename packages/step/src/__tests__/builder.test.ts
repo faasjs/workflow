@@ -23,7 +23,6 @@ describe('builder', () => {
     it('should work with lang', () => {
       const hook = buildHook({ lang: { stepIdRequired: 'stepId is missing.' } })
 
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       expect(() => hook({})).toThrowError('stepId is missing.')
     })
@@ -68,10 +67,9 @@ describe('builder', () => {
       })
 
       it('should work with special lang', async () => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         expect(() =>
           test(
+            // @ts-ignore
             buildHook({ lang: LangZh })({
               lang: { stepIdRequired: 'required' },
             })

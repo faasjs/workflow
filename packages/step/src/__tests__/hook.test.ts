@@ -327,7 +327,6 @@ describe('hook', () => {
         useStepRecordFunc({
           stepId: 'basic',
           getUser: async () => Promise.resolve({ id: 'test' }),
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           [`${action}`]: async ({ data }) => {
             data.productName = 'test'
@@ -365,7 +364,6 @@ describe('hook', () => {
           useStepRecordFunc<'basic', { key: string }>({
             stepId: 'basic',
             getUser: async () => Promise.resolve({ id: 'test' }),
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             [`${action}`]: async ({ data, key }) => {
               data.productName = 'test'
