@@ -3,7 +3,20 @@
   "dockerComposeFile": "docker-compose.yml",
   "service": "app",
   "workspaceFolder": "/root/app",
-  "forwardPorts": [12000],
+  "forwardPorts": [
+    12000
+  ],
+  "portsAttributes": {
+    "12000": {
+      "label": "Application"
+    }
+  },
+  "otherPortsAttributes": {
+    "onAutoForward": "ignore"
+  },
+  "mounts": [
+    "source=node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume"
+  ],
   "customizations": {
     "vscode": {
       "settings": {

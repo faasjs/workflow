@@ -14,6 +14,8 @@
     "clean": "rm -rf packages/*/dist coverage"
   },
   "devDependencies": {
+    "@types/jest": "*",
+    "@types/node": "*",
     "@faasjs/jest": "*",
     "@faasjs/test": "*",
     "tsup": "*",
@@ -40,7 +42,9 @@
     "moduleNameMapper": {
       "\\.(css|less|sass|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "@faasjs/jest",
       "@faasjs/workflow-(.*)": "<rootDir>/packages/$1/src",
-      "lodash-es": "lodash"
+      "lodash-es": "lodash",
+      "@preact/signals-react": "<rootDir>/node_modules/@preact/signals-react/dist/signals.js",
+      "@preact/signals-core": "<rootDir>/node_modules/@preact/signals-core/dist/signals-core.js"
     }
   }
 }

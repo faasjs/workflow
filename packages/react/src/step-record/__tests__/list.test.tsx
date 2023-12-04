@@ -6,10 +6,7 @@ import { StepRecordList } from '../list'
 import { FaasReactClient } from '@faasjs/react'
 
 describe('StepRecordList', () => {
-  let originalFetch: (
-    input: RequestInfo | URL,
-    init?: RequestInit
-  ) => Promise<Response>
+  let originalFetch: typeof window.fetch
 
   beforeEach(() => {
     originalFetch = window.fetch

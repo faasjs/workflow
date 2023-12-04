@@ -67,7 +67,7 @@ export function buildActions<TName extends keyof Steps>(props: {
     props.record.updatedBy = props.user?.id
 
     if (!props.newRecord) {
-      const updates = props.record
+      const updates = JSON.parse(JSON.stringify(props.record))
 
       delete updates.id
       delete updates.createdBy

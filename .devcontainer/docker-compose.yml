@@ -9,9 +9,8 @@ services:
       SECRET_REDIS_HOST: redis
     volumes:
       - ..:/root/app:delegated
-      - /root/app/node_modules/
-
       - ~/.ssh:/root/.ssh:delegated
+      - ~/.zsh_history:/root/.zsh_history:delegated
     depends_on:
       - pg_development
       - pg_testing
