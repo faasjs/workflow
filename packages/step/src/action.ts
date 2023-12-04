@@ -66,18 +66,27 @@ export function buildActions<TName extends keyof Steps>(props: {
 
     props.record.updatedBy = props.user?.id
 
-    if (!props.newRecord)
+    if (!props.newRecord) {
+      const updates = props.record
+
+      delete updates.id
+      delete updates.createdBy
+      delete updates.createdAt
+
       props.record = Object.assign(
         props.record,
         await props
           .trx('step_records')
           .where('id', props.record.id)
-          .update(props.record)
+          .update(updates)
           .returning('*')
           .then(r => r[0])
       )
-    else {
+      }else {
       props.record.createdBy = props.user?.id
+
+      if (!props.record.createdAt) props.record.createdAt = new Date()
+
       props.record = Object.assign(
         props.record,
         await props
