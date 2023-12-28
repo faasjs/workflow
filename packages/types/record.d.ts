@@ -64,4 +64,6 @@ export type StepRecord<StepName extends keyof Steps> = {
 
   summary: Partial<Steps[StepName]['summary'] | Steps[StepName]['data']>
   note: string
+
+  version: number
 }

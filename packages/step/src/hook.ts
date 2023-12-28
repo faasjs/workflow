@@ -19,7 +19,7 @@ import { BuildInvokeOptions } from './builder'
 
 export type BaseContext<
   TName extends keyof Steps,
-  TExtend extends Record<string, any>
+  TExtend extends Record<string, any>,
 > = {
   step: Partial<Step>
   id: string
@@ -40,7 +40,7 @@ export type ListPagination = {
 
 export type UseStepRecordFuncOptions<
   TName extends keyof Steps,
-  TExtend extends Record<string, any>
+  TExtend extends Record<string, any>,
 > = {
   stepId: TName
 
@@ -156,7 +156,7 @@ export type UseStepRecordFuncOptions<
 
 export function useStepRecordFunc<
   TName extends keyof Steps,
-  TExtend extends Record<string, any>
+  TExtend extends Record<string, any>,
 >(options: UseStepRecordFuncOptions<TName, TExtend>): Func {
   options.lang = !options.lang
     ? LangEn
@@ -167,7 +167,7 @@ export function useStepRecordFunc<
 
   if (!options.stepId) throw Error(options.lang.stepIdRequired)
 
-  return useFunc(function () {
+  return useFunc(() => {
     const cf = useCloudFunction()
     const http = useHttp<BaseActionParams<TName>>({
       validator: {
@@ -215,7 +215,7 @@ export function useStepRecordFunc<
 
     if (options.afterMount) options.afterMount()
 
-    return async function (data) {
+    return async data => {
       // get latest context
       const knex = useKnex()
       const redis = useRedis()

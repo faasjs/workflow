@@ -11,6 +11,8 @@ export const LangEn = {
   undoFailed: 'Undo failed, next record has be done.',
   locked: (key: string) => `Concurrent locked by key: ${key}.`,
   rejectSuccess: 'Rejected.',
+  versionNotMatch:
+    'Record has been updated, please refresh page and submit again.',
 }
 
 export const LangZh = {
@@ -26,6 +28,7 @@ export const LangZh = {
   undoFailed: '撤回工单失败，下游工单已完成',
   locked: (key: string) => `工单并发已锁定#${key}`,
   rejectSuccess: '驳回成功',
+  versionNotMatch: '工单内容已被更新，请刷新页面后重新提交',
 }
 
 export type Lang = typeof LangEn

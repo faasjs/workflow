@@ -12,7 +12,7 @@
   "editor.tabSize": 2,
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "quickfix.biome": true
+    "quickfix.biome": "explicit"
   },
   "editor.inlineSuggest.enabled": true,
   "editor.acceptSuggestionOnEnter": "smart",
@@ -57,7 +57,10 @@
   "typescript.tsc.autoDetect": "off",
   "npm.autoDetect": "off",
   "gitlens.codeLens.enabled": false,
-  "cSpell.words": ["Faas", "faasjs"],
+  "cSpell.words": [
+    "Faas",
+    "faasjs"
+  ],
   "files.eol": "\n",
   "terminal.integrated.scrollback": 100000,
   "json.maxItemsComputed": 10000,

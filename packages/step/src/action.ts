@@ -19,7 +19,7 @@ export type BaseActionParams<TName extends keyof Steps> = {
 
 export type BaseActionOptions<
   TName extends keyof Steps,
-  TExtend = any
+  TExtend = any,
 > = BaseContext<TName, TExtend> & {
   save: () => Promise<StepRecord<TName>>
   cancel: (note: string) => void
@@ -73,16 +73,20 @@ export function buildActions<TName extends keyof Steps>(props: {
       delete updates.createdBy
       delete updates.createdAt
 
+      updates.version = props.record.version + 1
+
+      const updateResult = await props
+        .trx('step_records')
+        .where({ id: props.record.id, version: props.record.version })
+        .update(updates)
+
+      if (updateResult !== 1) throw Error(props.options.lang.versionNotMatch)
+
       props.record = Object.assign(
         props.record,
-        await props
-          .trx('step_records')
-          .where('id', props.record.id)
-          .update(updates)
-          .returning('*')
-          .then(r => r[0])
+        await props.trx('step_records').where('id', props.record.id).first()
       )
-      }else {
+    } else {
       props.record.createdBy = props.user?.id
 
       if (!props.record.createdAt) props.record.createdAt = new Date()

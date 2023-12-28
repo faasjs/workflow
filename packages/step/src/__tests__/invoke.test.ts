@@ -89,7 +89,7 @@ describe('invokeStep with mono mode', () => {
 
     const response = await func.export().handler({}, { request_id: 'test' })
 
-    expect(response.headers).toMatchObject({ 'X-FaasJS-Request-Id': 'test' })
+    expect(response.headers).toMatchObject({ 'x-faasjs-request-id': 'test' })
 
     const record = await query('step_records').first()
 

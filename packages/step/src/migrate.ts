@@ -56,6 +56,7 @@ export async function up(knex: Knex): Promise<void> {
     t.integer('duration').notNullable().defaultTo(0)
     t.jsonb('summary').notNullable().defaultTo('{}')
     t.string('note')
+    t.integer('version').notNullable().defaultTo(0)
   })
 }
 

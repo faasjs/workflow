@@ -2,6 +2,7 @@ import { useCloudFunction } from '@faasjs/cloud_function'
 import { useHttp } from '@faasjs/http'
 import { query, transaction } from '@faasjs/knex'
 import { buildActions } from '../action'
+import { LangEn } from '../lang'
 
 describe('action', () => {
   it('should work', async () => {
@@ -14,6 +15,7 @@ describe('action', () => {
         options: {
           stepId: 'basic',
           basePath: __dirname,
+          lang: LangEn,
         },
         step: {
           id: 'basic',
@@ -24,9 +26,12 @@ describe('action', () => {
         },
         record: {
           id: 'id',
+          stepId: 'basic',
+          status: 'draft',
           ancestorIds: [],
+          version: 0,
         },
-        newRecord: false,
+        newRecord: true,
         user: { id: 'test' },
         trx,
         saved: () => (saved = true),
@@ -49,11 +54,12 @@ describe('action', () => {
       const save = await actions.save()
 
       expect(saved).toBeTruthy()
-      expect(save).toEqual({
+      expect(save).toMatchObject({
         id: 'id',
         ancestorIds: [],
-        summary: undefined,
+        summary: {},
         updatedBy: 'test',
+        version: 0,
       })
 
       const result = await actions.createRecord({
@@ -72,6 +78,7 @@ describe('action', () => {
         previousStepId: 'basic',
         previousUserId: 'test',
         stepId: 'basic',
+        version: 0,
       })
 
       actions.cancel('note')
@@ -82,7 +89,55 @@ describe('action', () => {
         note: 'note',
         canceledAt: expect.any(Date),
         canceledBy: 'test',
+        version: 1,
       })
     })
+  })
+
+  it('version not match', async () => {
+    const cf = useCloudFunction()
+    const http = await useHttp().mount()
+    let saved = false
+
+    await expect(
+      transaction<any>(async trx => {
+        const actions = buildActions({
+          options: {
+            stepId: 'basic',
+            basePath: __dirname,
+            lang: LangEn,
+          },
+          step: {
+            id: 'basic',
+            name: 'basic',
+            enabled: true,
+            roles: [],
+            actions: [],
+          },
+          record: {
+            id: 'id',
+            stepId: 'basic',
+            status: 'draft',
+            ancestorIds: [],
+            version: 0,
+          },
+          newRecord: true,
+          user: { id: 'test' },
+          trx,
+          saved: () => (saved = true),
+          cf,
+          http,
+          buildInvokeOptions: {
+            async beforeInvoke(props) {
+              props.session = { uid: props.user.id }
+            },
+          },
+        })
+
+        await actions.save()
+
+        await Promise.all([actions.save(), actions.save()])
+      })
+    ).rejects.toThrow(LangEn.versionNotMatch)
   })
 })

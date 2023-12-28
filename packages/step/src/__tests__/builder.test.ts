@@ -74,7 +74,7 @@ describe('builder', () => {
               lang: { stepIdRequired: 'required' },
             })
           )
-        ).toThrowError('required')
+        ).toThrow('required')
       })
     })
 
@@ -88,12 +88,12 @@ describe('builder', () => {
         })
       )
 
-      expect(
-        await func.JSONhandler({
+      await expect(
+        func.JSONhandler({
           action: 'draft',
           data: {},
         })
-      ).toMatchObject({
+      ).resolves.toMatchObject({
         statusCode: 200,
         data: { message: 'value' },
       })
