@@ -3,6 +3,7 @@ import { test } from '@faasjs/test'
 import { query } from '@faasjs/knex'
 import { Status, Times, Bys } from '../enum'
 import type { StepRecordAction } from '@faasjs/workflow-types'
+import { LangEn } from '../lang'
 
 declare module '@faasjs/workflow-types/steps' {
   interface Steps {
@@ -598,6 +599,43 @@ describe('hook', () => {
       })
 
       expect(error.message).toContain('Concurrent locked by key: productName.')
+    })
+
+    it('work with version', async () => {
+      await query('step_records').insert({
+        id: 'test',
+        stepId: 'basic',
+        status: 'draft',
+        data: '{"productName":"productName"}',
+        version: 1,
+      })
+
+      const handler = test(
+        useStepRecordFunc({
+          stepId: 'basic',
+        })
+      ).JSONhandler
+
+      await expect(
+        handler({
+          id: 'test',
+          action: 'draft',
+          version: 1,
+        })
+      ).resolves.toMatchObject({
+        statusCode: 200,
+      })
+
+      await expect(
+        handler({
+          id: 'test',
+          action: 'draft',
+          version: 0,
+        })
+      ).resolves.toMatchObject({
+        statusCode: 500,
+        error: { message: LangEn.versionNotMatch },
+      })
     })
   })
 })

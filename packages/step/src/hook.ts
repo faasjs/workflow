@@ -340,6 +340,12 @@ export function useStepRecordFunc<
 
               if (!record) throw Error(options.lang.recordNotFound(params.id))
 
+              if (
+                typeof params.version === 'number' &&
+                record.version !== params.version
+              )
+                throw Error(options.lang.versionNotMatch)
+
               if (params.data)
                 record.data = Object.assign(record.data, params.data)
             } else {
@@ -353,6 +359,9 @@ export function useStepRecordFunc<
                 data: params.data || {},
                 createdAt: new Date(),
               }
+
+              if (typeof params.version === 'number')
+                record.version = params.version
             }
 
             if (options.lockKey) {
