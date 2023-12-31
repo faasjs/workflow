@@ -364,8 +364,10 @@ export function useStepRecordFunc<
                 record.version = params.version
             }
 
+            let lockKey: string
+
             if (options.lockKey) {
-              const lockKey = options.lockKey({
+              lockKey = options.lockKey({
                 stepId: options.stepId,
                 id: params.id,
                 data: record.data,
@@ -558,6 +560,15 @@ export function useStepRecordFunc<
               })
 
             if (newTrx) await trx.commit()
+
+            if (lockKey)
+              try {
+                await redis.unlock(
+                  `step:record:lock:${options.stepId}:${lockKey}`
+                )
+              } catch (err) {
+                console.warn(err)
+              }
 
             return result
           } catch (error) {

@@ -561,7 +561,7 @@ describe('hook', () => {
         })
       ).JSONhandler
 
-      await handler({
+      handler({
         action: 'draft',
         data: { productName: 'name' },
       })
@@ -588,14 +588,20 @@ describe('hook', () => {
         })
       ).JSONhandler
 
-      await handler({
+      handler({
         id: 'test',
         action: 'draft',
+        data: {
+          productName: 'productName',
+        },
       })
 
       const { error } = await handler({
         id: 'test',
         action: 'draft',
+        data: {
+          productName: 'productName',
+        },
       })
 
       expect(error.message).toContain('Concurrent locked by key: productName.')
