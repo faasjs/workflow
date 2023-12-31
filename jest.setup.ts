@@ -92,5 +92,6 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
     await useKnex().raw(
       'TRUNCATE steps RESTART IDENTITY;TRUNCATE step_records RESTART IDENTITY;'
     )
+    await useRedis().adapter.flushall()
   })
 }

@@ -558,6 +558,7 @@ describe('hook', () => {
         useStepRecordFunc({
           stepId: 'basic',
           lockKey: ({ data }) => data.productName,
+          draft: async () => await new Promise(res => setTimeout(res, 500)),
         })
       ).JSONhandler
 
@@ -585,6 +586,7 @@ describe('hook', () => {
         useStepRecordFunc({
           stepId: 'basic',
           lockKey: ({ data }) => data.productName,
+          draft: async () => await new Promise(res => setTimeout(res, 500)),
         })
       ).JSONhandler
 
