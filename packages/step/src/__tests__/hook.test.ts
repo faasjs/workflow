@@ -607,8 +607,6 @@ describe('hook', () => {
         }),
       ])
 
-      console.log(results)
-
       const errors = results.filter(r => r.error)
 
       expect(errors).toHaveLength(1)
