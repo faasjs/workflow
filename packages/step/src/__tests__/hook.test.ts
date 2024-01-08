@@ -590,23 +590,31 @@ describe('hook', () => {
         })
       ).JSONhandler
 
-      handler({
-        id: 'test',
-        action: 'draft',
-        data: {
-          productName: 'productName',
-        },
-      })
+      const results = await Promise.all([
+        handler({
+          id: 'test',
+          action: 'draft',
+          data: {
+            productName: 'productName',
+          },
+        }),
+        handler({
+          id: 'test',
+          action: 'draft',
+          data: {
+            productName: 'productName',
+          },
+        }),
+      ])
 
-      const { error } = await handler({
-        id: 'test',
-        action: 'draft',
-        data: {
-          productName: 'productName',
-        },
-      })
+      console.log(results)
 
-      expect(error.message).toContain('Concurrent locked by key: productName.')
+      const errors = results.filter(r => r.error)
+
+      expect(errors).toHaveLength(1)
+      expect(errors[0].error.message).toEqual(
+        'Concurrent locked by key: productName.'
+      )
     })
 
     it('work with version', async () => {
