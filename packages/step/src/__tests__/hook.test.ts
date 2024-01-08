@@ -645,5 +645,28 @@ describe('hook', () => {
         error: { message: LangEn.versionNotMatch },
       })
     })
+
+    it('work with knexTransactionConfig', async () => {
+      const handler = test(
+        useStepRecordFunc({
+          stepId: 'basic',
+          knexTransactionConfig: { readOnly: true },
+          draft: async ({ trx }) => await trx('step_records').insert({}),
+        })
+      ).JSONhandler
+
+      await expect(
+        handler({
+          action: 'draft',
+          data: {},
+        })
+      ).resolves.toMatchObject({
+        statusCode: 500,
+        error: {
+          message:
+            'insert into "step_records" default values - cannot execute INSERT in a read-only transaction',
+        },
+      })
+    })
   })
 })

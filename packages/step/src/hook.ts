@@ -152,6 +152,9 @@ export type UseStepRecordFuncOptions<
   }) => string | undefined
 
   buildInvokeOptions?: BuildInvokeOptions<TExtend>
+
+  /** [Knex's Transaction config](https://knexjs.org/guide/transactions.html) */
+  knexTransactionConfig?: K.TransactionConfig
 }
 
 export function useStepRecordFunc<
@@ -328,7 +331,12 @@ export function useStepRecordFunc<
             throw Error(options.lang.idOrDataRequired)
 
           const trx =
-            params.trx || http.params.trx || (await knex.adapter.transaction())
+            params.trx ||
+            http.params.trx ||
+            (await knex.adapter.transaction(
+              null,
+              options.knexTransactionConfig
+            ))
 
           try {
             let record: Partial<StepRecord<TName>>
