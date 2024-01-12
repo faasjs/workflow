@@ -8,10 +8,11 @@ import type {
 } from '@faasjs/workflow-types'
 import { resolve } from 'path'
 import type { Knex } from 'knex'
+import type { Func } from '@faasjs/func'
 
 export type InvokeStepOptions<
   TName extends keyof Steps,
-  TExtend extends Record<string, any>
+  TExtend extends Record<string, any>,
 > = {
   stepId: TName
   action: StepRecordAction
@@ -55,7 +56,7 @@ export type InvokeStepOptions<
  */
 export async function invokeStep<
   TName extends keyof Steps,
-  TExtend extends Record<string, any>
+  TExtend extends Record<string, any>,
 >(props: InvokeStepOptions<TName, TExtend>) {
   if (!props.cf) props.cf = await useCloudFunction().mount()
   if (!props.http) props.http = await useHttp().mount()
@@ -87,7 +88,7 @@ export async function invokeStep<
 
   if (process.env.FaasMode === 'mono') {
     const localPath = resolve(process.env.FaasRoot, path)
-    let file
+    let file: Func
     try {
       const filePath = require.resolve(`${localPath}.func`)
       if (require.cache[filePath]) delete require.cache[filePath]

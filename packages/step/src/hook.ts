@@ -38,6 +38,12 @@ export type ListPagination = {
   total: number
 }
 
+export type Result = {
+  [key: string]: any
+  id?: string
+  message?: string
+}
+
 export type UseStepRecordFuncOptions<
   TName extends keyof Steps,
   TExtend extends Record<string, any>,
@@ -140,7 +146,10 @@ export type UseStepRecordFuncOptions<
   ) => Promise<Partial<TExtend>>
 
   /** run after draft, done, etc. */
-  afterAction?: (context: BaseContext<TName, TExtend>) => Promise<void>
+  afterAction?: (
+    context: BaseContext<TName, TExtend>,
+    result: Result
+  ) => Promise<void>
 
   /** extend context */
   extends?: Partial<TExtend>
@@ -457,7 +466,7 @@ export function useStepRecordFunc<
               record.duration =
                 new Date().getTime() - record.createdAt.getTime()
 
-            let result: Record<string, any> = {}
+            let result: Result = {}
 
             switch (params.action) {
               case 'undo': {
@@ -553,19 +562,22 @@ export function useStepRecordFunc<
             if (!result.id) result.id = record.id
 
             if (options.afterAction)
-              await options.afterAction({
-                action: params.action as StepRecordAction,
-                step,
-                user,
-                lang: options.lang as Lang,
-                record,
-                id: record.id,
-                data: record.data,
-                note: record.note,
-                trx,
-                ...actions,
-                ...extend,
-              })
+              await options.afterAction(
+                {
+                  action: params.action as StepRecordAction,
+                  step,
+                  user,
+                  lang: options.lang as Lang,
+                  record,
+                  id: record.id,
+                  data: record.data,
+                  note: record.note,
+                  trx,
+                  ...actions,
+                  ...extend,
+                },
+                result
+              )
 
             if (newTrx) await trx.commit()
 
