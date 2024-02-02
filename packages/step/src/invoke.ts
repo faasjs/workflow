@@ -10,12 +10,15 @@ import { resolve } from 'path'
 import type { Knex } from 'knex'
 import type { Func } from '@faasjs/func'
 
+type InvokeStepAction<TName extends keyof Steps> = { stepAction: `${TName}/${StepRecordAction}` } | {
+  stepId: TName
+  action: StepRecordAction
+}
+
 export type InvokeStepOptions<
   TName extends keyof Steps,
   TExtend extends Record<string, any>,
-> = {
-  stepId: TName
-  action: StepRecordAction
+> = InvokeStepAction<TName> & {
   record: Partial<StepRecord<TName>>
   previous?: {
     id: string
@@ -58,11 +61,14 @@ export async function invokeStep<
   TName extends keyof Steps,
   TExtend extends Record<string, any>,
 >(props: InvokeStepOptions<TName, TExtend>) {
+  const stepId = 'stepAction' in props ? props.stepAction.split('/')[0] : props.stepId
+  const action = 'stepAction' in props ? props.stepAction.split('/')[1] : props.action
+
   if (!props.cf) props.cf = await useCloudFunction().mount()
   if (!props.http) props.http = await useHttp().mount()
 
   const body: Record<string, any> = {
-    action: props.action,
+    action: action,
     ...props.record,
   }
 
@@ -77,7 +83,7 @@ export async function invokeStep<
       : props.previous.ancestorIds.concat(props.previous.id).filter(Boolean)
   }
 
-  const path = `${props.basePath || 'steps'}/${props.stepId}/index`
+  const path = `${props.basePath || 'steps'}/${stepId}/index`
 
   const headers = {
     ...props.http.headers,
