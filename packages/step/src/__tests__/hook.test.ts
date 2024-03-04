@@ -572,7 +572,7 @@ describe('hook', () => {
         data: { productName: 'name' },
       })
 
-      expect(error.message).toContain('Concurrent locked by key: name.')
+      expect(error.message).toContain('Concurrent locked by key: name, please try again later.')
     })
 
     it('work with lockKey and id', async () => {
@@ -611,7 +611,7 @@ describe('hook', () => {
 
       expect(errors).toHaveLength(1)
       expect(errors[0].error.message).toEqual(
-        'Concurrent locked by key: productName.'
+        'Concurrent locked by key: productName, please try again later.'
       )
     })
 

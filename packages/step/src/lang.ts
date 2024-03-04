@@ -9,7 +9,8 @@ export const LangEn = {
   undoNote: (id: string) => `Previously undo by ${id}`,
   undoSuccess: 'Undo record.',
   undoFailed: 'Undo failed, next record has be done.',
-  locked: (key: string) => `Concurrent locked by key: ${key}.`,
+  locked: (key: string) =>
+    `Concurrent locked by key: ${key}, please try again later.`,
   rejectSuccess: 'Rejected.',
   versionNotMatch:
     'Record has been updated, please refresh page and submit again.',
@@ -26,7 +27,7 @@ export const LangZh = {
   undoNote: (id: string) => `上游工单撤销 ${id}`,
   undoSuccess: '已撤回工单',
   undoFailed: '撤回工单失败，下游工单已完成',
-  locked: (key: string) => `工单并发已锁定#${key}`,
+  locked: (key: string) => `工单并发已锁定，请稍后重试。（${key}）`,
   rejectSuccess: '驳回成功',
   versionNotMatch: '工单内容已被更新，请刷新页面后重新提交',
 }
