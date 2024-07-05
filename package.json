@@ -1,9 +1,8 @@
 {
   "name": "faasjs-workflow",
   "version": "1.0.0",
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
+  "packageManager": "npm@10.8.1",
   "scripts": {
     "lint": "biome lint .",
     "format": "biome format --write .",
@@ -31,14 +30,8 @@
     },
     "testEnvironment": "node",
     "testRegex": "/*\\.test\\.tsx?$",
-    "setupFilesAfterEnv": [
-      "@faasjs/jest/jest.setup.js",
-      "./jest.setup.ts"
-    ],
-    "collectCoverageFrom": [
-      "**/*.ts",
-      "**/*.tsx"
-    ],
+    "setupFilesAfterEnv": ["@faasjs/jest/jest.setup.js", "./jest.setup.ts"],
+    "collectCoverageFrom": ["**/*.ts", "**/*.tsx"],
     "moduleNameMapper": {
       "\\.(css|less|sass|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "@faasjs/jest",
       "@faasjs/workflow-(.*)": "<rootDir>/packages/$1/src",
