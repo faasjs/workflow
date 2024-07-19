@@ -15,6 +15,7 @@
   "devDependencies": {
     "@types/jest": "*",
     "@types/node": "*",
+    "@types/react": "*",
     "@faasjs/jest": "*",
     "@faasjs/test": "*",
     "tsup": "*",
