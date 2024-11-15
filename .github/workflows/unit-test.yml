@@ -44,6 +44,6 @@ jobs:
         env:
           KNEX_CONNECTION_BASE: postgresql://postgres:postgres@localhost:5432
           REDIS_CONNECTION_BASE: redis://localhost:6379
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOVTOKEN }}
