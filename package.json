@@ -21,7 +21,8 @@
     "vitest": "*",
     "@vitejs/plugin-react": "*",
     "happy-dom": "*",
-    "vite-tsconfig-paths": "*"
+    "vite-tsconfig-paths": "*",
+    "@vitest/coverage-v8": "*"
   },
   "engines": {
     "npm": ">=11.0.0",
