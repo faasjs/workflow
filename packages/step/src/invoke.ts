@@ -1,14 +1,15 @@
-import { CloudFunction, useCloudFunction } from '@faasjs/cloud_function'
-import { Http, useHttp } from '@faasjs/http'
+import { resolve } from 'node:path'
+import { type CloudFunction, useCloudFunction } from '@faasjs/cloud_function'
+import type { Func } from '@faasjs/func'
+import { type Http, useHttp } from '@faasjs/http'
+import { loadPackage } from '@faasjs/load'
 import type {
-  Steps,
-  StepRecordAction,
   StepRecord,
+  StepRecordAction,
+  Steps,
   User,
 } from '@faasjs/workflow-types'
-import { resolve } from 'path'
 import type { Knex } from 'knex'
-import type { Func } from '@faasjs/func'
 
 export type InvokeStepOptions<
   TName extends keyof Steps,
@@ -88,16 +89,7 @@ export async function invokeStep<
 
   if (process.env.FaasMode === 'mono') {
     const localPath = resolve(process.env.FaasRoot, path)
-    let file: Func
-    try {
-      const filePath = require.resolve(`${localPath}.func`)
-      if (require.cache[filePath]) delete require.cache[filePath]
-      file = require(filePath).default
-    } catch (error) {
-      const filePath = require.resolve(`${localPath}.func.ts`)
-      if (require.cache[filePath]) delete require.cache[filePath]
-      file = require(`${localPath}.func.ts`).default
-    }
+    const file = await loadPackage<Func>(`${localPath}.func.ts`)
 
     return await file
       .export()

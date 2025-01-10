@@ -14,22 +14,32 @@
   "otherPortsAttributes": {
     "onAutoForward": "ignore"
   },
+  "remoteUser": "root",
   "mounts": [
+    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached",
     "source=node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume"
   ],
   "customizations": {
     "vscode": {
       "settings": {
         "terminal.integrated.defaultProfile.linux": "zsh",
-        "biome.lspBin": "/root/app/node_modules/.bin/biome",
-        "typescript.tsdk": "/root/app/node_modules/typescript/lib"
       },
       "extensions": [
         "streetsidesoftware.code-spell-checker",
         "faasjs.faasjs-snippets",
-        "GitHub.copilot",
+        "biomejs.biome"
+      ]
+    },
+    "codespaces": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh"
+      },
+      "extensions": [
+        "streetsidesoftware.code-spell-checker",
+        "faasjs.faasjs-snippets",
         "biomejs.biome"
       ]
     }
-  }
+  },
+  "waitFor": "onCreateCommand"
 }

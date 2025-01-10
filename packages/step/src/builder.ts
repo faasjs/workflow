@@ -1,6 +1,6 @@
-import type { Steps, StepRecordAction } from '@faasjs/workflow-types'
-import { useStepRecordFunc, UseStepRecordFuncOptions } from './hook'
-import { invokeStep, InvokeStepOptions } from './invoke'
+import type { StepRecordAction, Steps } from '@faasjs/workflow-types'
+import { type UseStepRecordFuncOptions, useStepRecordFunc } from './hook'
+import { type InvokeStepOptions, invokeStep } from './invoke.js'
 
 /**
  * Generate a custom step hook

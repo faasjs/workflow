@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest'
 import { useCloudFunction } from '@faasjs/cloud_function'
 import { useHttp } from '@faasjs/http'
 import { query, transaction } from '@faasjs/knex'

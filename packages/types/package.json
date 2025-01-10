@@ -2,7 +2,13 @@
   "name": "@faasjs/workflow-types",
   "version": "1.0.0",
   "license": "MIT",
+  "type": "module",
   "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./index.d.ts"
+    }
+  },
   "homepage": "https://github.com/faasjs/workflow/blob/main/types",
   "repository": {
     "type": "git",
@@ -14,7 +20,7 @@
   },
   "funding": "https://github.com/sponsors/faasjs",
   "engines": {
-    "npm": ">=10.0.0",
-    "node": ">=20.0.0"
+    "npm": ">=11.0.0",
+    "node": ">=22.0.0"
   }
 }

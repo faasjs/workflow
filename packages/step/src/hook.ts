@@ -16,6 +16,7 @@ import { Status, Times, Bys } from './enum'
 import { buildActions, BaseActionParams, BaseActionOptions } from './action'
 import { randomUUID } from 'crypto'
 import { BuildInvokeOptions } from './builder'
+import z from 'zod'
 
 export type BaseContext<
   TName extends keyof Steps,
@@ -166,6 +167,10 @@ export type UseStepRecordFuncOptions<
   knexTransactionConfig?: K.TransactionConfig
 }
 
+const validator = z.object({
+  action: z.enum(['new', 'get', 'list', 'draft', 'hang', 'done', 'cancel', 'lock', 'unlock', 'undo', 'reject']),
+})
+
 export function useStepRecordFunc<
   TName extends keyof Steps,
   TExtend extends Record<string, any>,
@@ -173,55 +178,15 @@ export function useStepRecordFunc<
   options.lang = !options.lang
     ? LangEn
     : {
-        ...LangEn,
-        ...options.lang,
-      }
+      ...LangEn,
+      ...options.lang,
+    }
 
   if (!options.stepId) throw Error(options.lang.stepIdRequired)
 
   return useFunc(() => {
     const cf = useCloudFunction()
-    const http = useHttp<BaseActionParams<TName>>({
-      validator: {
-        params: {
-          rules: {
-            action: {
-              required: true,
-              in: [
-                'new',
-                'get',
-                'list',
-                'draft',
-                'hang',
-                'done',
-                'cancel',
-                'lock',
-                'unlock',
-                'undo',
-                'reject',
-              ],
-            },
-          },
-          onError(type, key) {
-            switch (key) {
-              case 'action':
-                switch (type) {
-                  case 'params.rule.required':
-                    throw new HttpError({
-                      statusCode: 500,
-                      message: options.lang.actionRequired,
-                    })
-                  case 'params.rule.in':
-                    throw new HttpError({
-                      statusCode: 500,
-                      message: options.lang.actionMustBeIn,
-                    })
-                }
-            }
-          },
-        },
-      },
-    })
+    const http = useHttp<BaseActionParams<TName>>()
     useKnex()
     useRedis()
 
@@ -236,15 +201,35 @@ export function useStepRecordFunc<
       const newTrx = !params.trx && !http.params.trx
       const query: K = params.trx || http.params.trx || knex.query
 
+      const valid = validator.safeParse(params)
+
+      if (!valid.success) {
+        if (valid.error.issues[0].code === 'invalid_type')
+          throw new HttpError({
+            statusCode: 500,
+            message: options.lang.actionRequired,
+          })
+        else if (valid.error.issues[0].code === 'invalid_enum_value')
+          throw new HttpError({
+            statusCode: 500,
+            message: options.lang.actionMustBeIn,
+          })
+        else
+          throw new HttpError({
+            statusCode: 500,
+            message: valid.error.message,
+          })
+      }
+
       const step = await query('steps').where('id', options.stepId).first()
 
       const user = options.getUser
         ? await options.getUser({
-            http,
-            knex,
-            redis,
-            params,
-          })
+          http,
+          knex,
+          redis,
+          params,
+        })
         : null
 
       switch (params.action) {
@@ -276,19 +261,19 @@ export function useStepRecordFunc<
 
           const users = options.getUsers
             ? await options.getUsers({
-                knex,
-                redis,
-                ids: [
-                  record.createdBy,
-                  record.updatedBy,
-                  record.hangedBy,
-                  record.doneBy,
-                  record.canceledBy,
-                  record.lockedBy,
-                  record.unlockedBy,
-                  record.undoBy,
-                ].filter(Boolean),
-              })
+              knex,
+              redis,
+              ids: [
+                record.createdBy,
+                record.updatedBy,
+                record.hangedBy,
+                record.doneBy,
+                record.canceledBy,
+                record.lockedBy,
+                record.unlockedBy,
+                record.undoBy,
+              ].filter(Boolean),
+            })
             : []
 
           return {
@@ -399,7 +384,7 @@ export function useStepRecordFunc<
                   throw Error(options.lang.locked(lockKey))
                 }
             }
-            ;(
+            ; (
               [
                 'note',
                 'doneBy',

@@ -1,7 +1,8 @@
 import { Func } from '@faasjs/func'
-import { Knex, query } from '@faasjs/knex'
-import { invokeStep } from '../invoke'
 import { Http } from '@faasjs/http'
+import { Knex, query } from '@faasjs/knex'
+import { describe, expect, it } from 'vitest'
+import { invokeStep } from '../invoke.js'
 
 describe('invokeStep', () => {
   it('work without previous', async () => {

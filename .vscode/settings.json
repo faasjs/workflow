@@ -12,7 +12,9 @@
   "editor.tabSize": 2,
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "quickfix.biome": "explicit"
+    "source.fixAll": "explicit",
+    "quickfix.biome": "explicit",
+    "source.organizeImports.biome": "explicit"
   },
   "editor.inlineSuggest.enabled": true,
   "editor.acceptSuggestionOnEnter": "smart",
@@ -37,26 +39,7 @@
     "**/.swc": true,
     "**/.cache": true
   },
-  "[json]": {
-    "editor.defaultFormatter": "biomejs.biome"
-  },
-  "[javascript]": {
-    "editor.defaultFormatter": "biomejs.biome"
-  },
-  "[javascriptreact]": {
-    "editor.defaultFormatter": "biomejs.biome"
-  },
-  "[typescript]": {
-    "editor.defaultFormatter": "biomejs.biome"
-  },
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "biomejs.biome"
-  },
-  "biome.lspBin": "node_modules/.bin/biome",
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.tsc.autoDetect": "off",
   "npm.autoDetect": "off",
-  "gitlens.codeLens.enabled": false,
   "cSpell.words": [
     "Faas",
     "faasjs"

@@ -1,8 +1,9 @@
-import { StepRecordAction } from '@faasjs/workflow-types'
+import { query } from '@faasjs/knex'
+import { test } from '@faasjs/test'
+import type { StepRecordAction } from '@faasjs/workflow-types'
+import { describe, expect, it } from 'vitest'
 import { buildHook, buildInvoke } from '../builder'
 import { LangZh } from '../lang'
-import { test } from '@faasjs/test'
-import { query } from '@faasjs/knex'
 
 const actions: StepRecordAction[] = [
   'draft',

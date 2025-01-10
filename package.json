@@ -1,44 +1,30 @@
 {
   "name": "faasjs-workflow",
   "version": "1.0.0",
+  "type": "module",
   "workspaces": ["packages/*"],
-  "packageManager": "npm@10.8.1",
+  "packageManager": "npm@11.0.0",
   "scripts": {
     "lint": "biome lint .",
     "format": "biome format --write .",
-    "test": "jest -w=1 --forceExit",
-    "ci": "jest --silent --coverage --forceExit",
+    "test": "vitest run",
+    "ci": "vitest run --silent --coverage",
     "build": "npm run build --workspaces --if-present",
     "publish:devel": "node devel.cjs",
     "clean": "rm -rf packages/*/dist coverage"
   },
   "devDependencies": {
-    "@types/jest": "*",
     "@types/node": "*",
     "@types/react": "*",
-    "@faasjs/jest": "*",
-    "@faasjs/test": "*",
     "tsup": "*",
-    "@biomejs/biome": "*"
+    "@faasjs/lint": "*",
+    "vitest": "*",
+    "@vitejs/plugin-react": "*",
+    "happy-dom": "*",
+    "vite-tsconfig-paths": "*"
   },
   "engines": {
-    "npm": ">=10.0.0",
-    "node": ">=20.0.0"
-  },
-  "jest": {
-    "transform": {
-      ".tsx?": "@faasjs/jest"
-    },
-    "testEnvironment": "node",
-    "testRegex": "/*\\.test\\.tsx?$",
-    "setupFilesAfterEnv": ["@faasjs/jest/jest.setup.js", "./jest.setup.ts"],
-    "collectCoverageFrom": ["**/*.ts", "**/*.tsx"],
-    "moduleNameMapper": {
-      "\\.(css|less|sass|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "@faasjs/jest",
-      "@faasjs/workflow-(.*)": "<rootDir>/packages/$1/src",
-      "lodash-es": "lodash",
-      "@preact/signals-react": "<rootDir>/node_modules/@preact/signals-react/dist/signals.js",
-      "@preact/signals-core": "<rootDir>/node_modules/@preact/signals-core/dist/signals-core.js"
-    }
+    "npm": ">=11.0.0",
+    "node": ">=22.0.0"
   }
 }

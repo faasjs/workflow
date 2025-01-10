@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest'
 import { useStepRecordFunc } from '../hook'
 import { test } from '@faasjs/test'
 import { query } from '@faasjs/knex'

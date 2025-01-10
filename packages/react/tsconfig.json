@@ -18,8 +18,7 @@
     "jsx": "react-jsx",
     "rootDir": "src",
     "types": [
-      "node",
-      "jest",
+      "node"
     ]
   },
   "include": [

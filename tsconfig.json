@@ -8,11 +8,16 @@
     "strictNullChecks": false,
     "jsx": "react-jsx",
     "moduleResolution": "node",
-    "target": "ES2019",
+    "target": "ESNext",
     "module": "ESNext",
     "baseUrl": ".",
     "paths": {
-      "@faasjs/workflow-*": ["./packages/*"]
+      "@faasjs/workflow-*": [
+        "./packages/*"
+      ],
+      "@faasjs/*:": [
+        "./node_modules/@faasjs/*/dist/index.mjs"
+      ]
     }
   }
 }
