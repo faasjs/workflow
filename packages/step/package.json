@@ -29,23 +29,23 @@
     "node": ">=22.0.0"
   },
   "peerDependencies": {
-    "@faasjs/knex": "beta",
-    "@faasjs/redis": "beta",
+    "@faasjs/knex": "*",
+    "@faasjs/redis": "*",
     "@faasjs/workflow-types": "*",
-    "@faasjs/func": "beta",
-    "@faasjs/http": "beta",
-    "@faasjs/cloud_function": "beta",
+    "@faasjs/func": "*",
+    "@faasjs/http": "*",
+    "@faasjs/cloud_function": "*",
     "pg": "*",
     "zod": "*",
     "tsx": "*"
   },
   "devDependencies": {
-    "@faasjs/knex": "beta",
-    "@faasjs/redis": "beta",
+    "@faasjs/knex": "*",
+    "@faasjs/redis": "*",
     "@faasjs/workflow-types": "*",
-    "@faasjs/func": "beta",
-    "@faasjs/http": "beta",
-    "@faasjs/cloud_function": "beta",
+    "@faasjs/func": "*",
+    "@faasjs/http": "*",
+    "@faasjs/cloud_function": "*",
     "pg": "*",
     "zod": "*",
     "tsx": "*"
